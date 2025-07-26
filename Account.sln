@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.14.36301.6 d17.14
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Account", "Account\Account.csproj", "{DC4046A5-E5C5-4C08-9622-C13F058746B0}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AccountService", "Account\AccountService.csproj", "{DC4046A5-E5C5-4C08-9622-C13F058746B0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
