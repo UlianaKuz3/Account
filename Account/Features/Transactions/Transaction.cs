@@ -1,6 +1,4 @@
-﻿using Account.Features.Transactions.Models;
-
-namespace AccountService.Features.Transactions.Models
+﻿namespace AccountService.Features.Transactions
 {
     public class Transaction
     {

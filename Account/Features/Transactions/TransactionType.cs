@@ -1,4 +1,4 @@
-﻿namespace Account.Features.Transactions.Models
+﻿namespace AccountService.Features.Transactions
 {
     public enum TransactionType
     {
