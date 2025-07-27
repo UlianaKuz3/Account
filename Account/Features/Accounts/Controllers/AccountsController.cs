@@ -6,7 +6,7 @@ namespace AccountService.Features.Accounts.Controllers
     [Route("api/[controller]")]
     public class AccountsController : ControllerBase
     {
-        private static readonly List<Account> Accounts = new();
+        public static readonly List<Account> Accounts = new();
 
         [HttpGet]
         public ActionResult<IEnumerable<Account>> GetAll()
@@ -31,7 +31,9 @@ namespace AccountService.Features.Accounts.Controllers
             account.OpenDate = DateTime.UtcNow;
             Accounts.Add(account);
 
-            return CreatedAtAction(nameof(GetById), new { id = account.Id }, account);
+            var locationUri = $"{Request.Host}/api/Accounts/{account.Id}";
+
+            return Created(locationUri, account);
         }
 
         [HttpPut("{id:guid}")]
