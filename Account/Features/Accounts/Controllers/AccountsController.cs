@@ -1,63 +1,68 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using AccountService.Features.Accounts.CreateAccount;
+using AccountService.Features.Accounts.DeleteAccount;
+using AccountService.Features.Accounts.GetAccountById;
+using AccountService.Features.Accounts.GetAllAccounts;
+using AccountService.Features.Accounts.HasAccount;
+using AccountService.Features.Accounts.UpdateAccount;
+using MediatR;
+using Microsoft.AspNetCore.Mvc;
 using System.Security.Principal;
 
 namespace AccountService.Features.Accounts.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class AccountsController(IAccountRepository repository) : ControllerBase
+    public class AccountsController(IMediator mediator) : ControllerBase
     {
-        private readonly IAccountRepository _repository = repository;
+        private readonly IMediator _mediator = mediator;
 
         [HttpGet]
-        public ActionResult<IEnumerable<Account>> GetAll()
+        public async Task<ActionResult<IEnumerable<Account>>> GetAll()
         {
-            return Ok(_repository.GetAll());
+            var accounts = await _mediator.Send(new GetAllAccountsQuery());
+            return Ok(accounts);
         }
 
+
         [HttpGet("{id:guid}")]
-        public ActionResult<Account> GetById(Guid id)
+        public async Task<IActionResult> GetById(Guid id)
         {
-            var account = _repository.GetById(id);
+            var account = await _mediator.Send(new GetAccountByIdQuery(id));
             if (account is null) return NotFound();
             return Ok(account);
         }
 
         [HttpPost]
-        public IActionResult Create([FromBody] Account account)
+        public async Task<IActionResult> Create([FromBody] CreateAccountCommand command)
         {
-            account.Id = Guid.NewGuid();
-            account.OpenDate = DateTime.UtcNow;
-            _repository.Add(account);
-
+            var account = await _mediator.Send(command);
             var locationUri = $"{Request.Host}/api/Accounts/{account.Id}";
 
             return Created(locationUri, account);
         }
 
         [HttpPut("{id:guid}")]
-        public IActionResult Update(Guid id, [FromBody] Account updated)
+        public async Task<IActionResult> Update(Guid id, [FromBody] UpdateAccountCommand command)
         {
-            var existing = _repository.GetById(id);
-            if (existing == null) return NotFound();
+            var updated = command with { Id = id };
+            var result = await _mediator.Send(updated);
 
-            updated.Id = id; 
-            _repository.Update(updated);
+            if (!result) return NotFound();
             return NoContent();
         }
 
         [HttpDelete("{id:guid}")]
-        public IActionResult Delete(Guid id)
+        public async Task<IActionResult> Delete(Guid id)
         {
-            _repository.Delete(id);
+            await _mediator.Send(new DeleteAccountCommand(id));
             return NoContent();
         }
 
         [HttpGet("check/{ownerId:guid}")]
-        public ActionResult<bool> HasAccount(Guid ownerId)
+        public async Task<IActionResult> HasAccount(Guid ownerId)
         {
-            bool has = _repository.GetAll().Any(a => a.OwnerId == ownerId);
-            return Ok(has);
+            var result = await _mediator.Send(new HasAccountQuery(ownerId));
+            return Ok(result);
         }
     }
 }

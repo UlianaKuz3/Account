@@ -1,115 +1,69 @@
 ﻿using AccountService.Features.Accounts;
 using AccountService.Features.Accounts.Controllers;
+using AccountService.Features.Transactions.RegisterTransaction;
+using AccountService.Features.Transactions.TransferTransaction;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AccountService.Features.Transactions.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class TransactionsController(IAccountRepository accountRepository) : ControllerBase
+    public class TransactionsController(IMediator mediator) : ControllerBase
     {
-        private readonly IAccountRepository _accountRepository = accountRepository;
+        private readonly IMediator _mediator = mediator;
 
         [HttpPost]
-        public IActionResult RegisterTransaction([FromBody] RegisterTransactionDto dto)
+        public async Task<IActionResult> RegisterTransaction([FromBody] RegisterTransactionDto dto)
         {
+            var command = new RegisterTransactionCommand(
+                dto.AccountId,
+                dto.CounterpartyAccountId,
+                dto.Amount,
+                dto.Currency,
+                dto.Type,
+                dto.Description
+            );
 
-            var account = _accountRepository.GetById(dto.AccountId);
-            if (account == null)
-                return NotFound($"Account {dto.AccountId} not found");
-
-            if (!string.Equals(account.Currency, dto.Currency, StringComparison.OrdinalIgnoreCase))
-                return BadRequest("Currency mismatch");
-
-            if (dto.Type == TransactionType.Credit)
+            try
             {
-                account.Balance += dto.Amount;
+                var transaction = await _mediator.Send(command);
+                return Ok(transaction);
             }
-            else if (dto.Type == TransactionType.Debit)
+            catch (KeyNotFoundException ex)
             {
-                if (account.Balance < dto.Amount)
-                    return BadRequest("Insufficient funds");
-
-                account.Balance -= dto.Amount;
+                return NotFound(ex.Message);
             }
-            else
+            catch (InvalidOperationException ex)
             {
-                return BadRequest("Invalid transaction type");
+                return BadRequest(ex.Message);
             }
-
-            var transaction = new Transaction
-            {
-                Id = Guid.NewGuid(),
-                AccountId = dto.AccountId,
-                CounterpartyAccountId = dto.CounterpartyAccountId,
-                Amount = dto.Amount,
-                Currency = dto.Currency,
-                Type = dto.Type,
-                Description = dto.Description,
-                Timestamp = DateTime.UtcNow
-            };
-
-            account.Transactions.Add(transaction);
-
-            _accountRepository.Update(account);
-
-            return Ok(transaction);
         }
 
-
         [HttpPost("transfer")]
-        public IActionResult Transfer([FromBody] TransferDto dto)
+        public async Task<IActionResult> Transfer([FromBody] TransferDto dto)
         {
-            var fromAccount = _accountRepository.GetById(dto.FromAccountId);
-            var toAccount = _accountRepository.GetById(dto.ToAccountId);
+            var command = new TransferTransactionCommand(
+                dto.FromAccountId,
+                dto.ToAccountId,
+                dto.Amount,
+                dto.Currency,
+                dto.Description
+            );
 
-            if (fromAccount == null || toAccount == null)
-                return NotFound("One of the accounts not found");
-
-            if (!string.Equals(fromAccount.Currency, toAccount.Currency, StringComparison.OrdinalIgnoreCase))
-                return BadRequest("Currency mismatch between accounts");
-
-            if (!string.Equals(fromAccount.Currency, dto.Currency, StringComparison.OrdinalIgnoreCase))
-                return BadRequest("Transfer currency does not match account currency");
-
-            if (fromAccount.Balance < dto.Amount)
-                return BadRequest("Insufficient funds");
-
-            fromAccount.Balance -= dto.Amount;
-            var debitTransaction = new Transaction
+            try
             {
-                Id = Guid.NewGuid(),
-                AccountId = fromAccount.Id,
-                CounterpartyAccountId = toAccount.Id,
-                Amount = dto.Amount,
-                Currency = dto.Currency,
-                Type = TransactionType.Debit,
-                Description = dto.Description,
-                Timestamp = DateTime.UtcNow
-            };
-            fromAccount.Transactions.Add(debitTransaction);
-            _accountRepository.Update(fromAccount);
-
-            toAccount.Balance += dto.Amount;
-            var creditTransaction = new Transaction
+                var result = await _mediator.Send(command);
+                return Ok(new { result.Debit, result.Credit });
+            }
+            catch (KeyNotFoundException ex)
             {
-                Id = Guid.NewGuid(),
-                AccountId = toAccount.Id,
-                CounterpartyAccountId = fromAccount.Id,
-                Amount = dto.Amount,
-                Currency = dto.Currency,
-                Type = TransactionType.Credit,
-                Description = dto.Description,
-                Timestamp = DateTime.UtcNow
-            };
-            toAccount.Transactions.Add(creditTransaction);
-            _accountRepository.Update(toAccount);
-
-            return Ok(new
+                return NotFound(ex.Message);
+            }
+            catch (InvalidOperationException ex)
             {
-                Debit = debitTransaction,
-                Credit = creditTransaction
-            });
+                return BadRequest(ex.Message);
+            }
         }
     }
 }
