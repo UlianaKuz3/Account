@@ -1,6 +1,6 @@
 ﻿namespace AccountService.Features.Transactions
 {
-    public class TransferRequest
+    public class TransferDto
     {
         public Guid FromAccountId { get; set; }
         public Guid ToAccountId { get; set; }

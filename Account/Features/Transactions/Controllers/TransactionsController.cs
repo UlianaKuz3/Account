@@ -6,30 +6,36 @@ namespace AccountService.Features.Transactions.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class TransactionsController : ControllerBase
+    public class TransactionsController(IAccountRepository accountRepository) : ControllerBase
     {
-        private static List<Account> Accounts => AccountsController.Accounts;
+        private readonly IAccountRepository _accountRepository = accountRepository;
 
         [HttpPost]
         public IActionResult RegisterTransaction([FromBody] RegisterTransactionDto dto)
         {
-            var account = Accounts.FirstOrDefault(a => a.Id == dto.AccountId);
+
+            var account = _accountRepository.GetById(dto.AccountId);
             if (account == null)
                 return NotFound($"Account {dto.AccountId} not found");
 
             if (!string.Equals(account.Currency, dto.Currency, StringComparison.OrdinalIgnoreCase))
                 return BadRequest("Currency mismatch");
 
-            if (dto.Type.ToString().Equals("Credit", StringComparison.OrdinalIgnoreCase))
+            if (dto.Type == TransactionType.Credit)
+            {
                 account.Balance += dto.Amount;
-            else if (dto.Type.ToString().Equals("Debit", StringComparison.OrdinalIgnoreCase))
+            }
+            else if (dto.Type == TransactionType.Debit)
             {
                 if (account.Balance < dto.Amount)
                     return BadRequest("Insufficient funds");
+
                 account.Balance -= dto.Amount;
             }
             else
+            {
                 return BadRequest("Invalid transaction type");
+            }
 
             var transaction = new Transaction
             {
@@ -45,15 +51,17 @@ namespace AccountService.Features.Transactions.Controllers
 
             account.Transactions.Add(transaction);
 
+            _accountRepository.Update(account);
+
             return Ok(transaction);
         }
 
 
         [HttpPost("transfer")]
-        public IActionResult Transfer([FromBody] TransferRequest request)
+        public IActionResult Transfer([FromBody] TransferDto dto)
         {
-            var fromAccount = Accounts.FirstOrDefault(a => a.Id == request.FromAccountId);
-            var toAccount = Accounts.FirstOrDefault(a => a.Id == request.ToAccountId);
+            var fromAccount = _accountRepository.GetById(dto.FromAccountId);
+            var toAccount = _accountRepository.GetById(dto.ToAccountId);
 
             if (fromAccount == null || toAccount == null)
                 return NotFound("One of the accounts not found");
@@ -61,40 +69,41 @@ namespace AccountService.Features.Transactions.Controllers
             if (!string.Equals(fromAccount.Currency, toAccount.Currency, StringComparison.OrdinalIgnoreCase))
                 return BadRequest("Currency mismatch between accounts");
 
-            if (!string.Equals(fromAccount.Currency, request.Currency, StringComparison.OrdinalIgnoreCase))
+            if (!string.Equals(fromAccount.Currency, dto.Currency, StringComparison.OrdinalIgnoreCase))
                 return BadRequest("Transfer currency does not match account currency");
 
-            if (fromAccount.Balance < request.Amount)
+            if (fromAccount.Balance < dto.Amount)
                 return BadRequest("Insufficient funds");
 
-            fromAccount.Balance -= request.Amount;
+            fromAccount.Balance -= dto.Amount;
             var debitTransaction = new Transaction
             {
                 Id = Guid.NewGuid(),
                 AccountId = fromAccount.Id,
                 CounterpartyAccountId = toAccount.Id,
-                Amount = request.Amount,
-                Currency = request.Currency,
+                Amount = dto.Amount,
+                Currency = dto.Currency,
                 Type = TransactionType.Debit,
-                Description = request.Description,
+                Description = dto.Description,
                 Timestamp = DateTime.UtcNow
             };
             fromAccount.Transactions.Add(debitTransaction);
+            _accountRepository.Update(fromAccount);
 
-
-            toAccount.Balance += request.Amount;
+            toAccount.Balance += dto.Amount;
             var creditTransaction = new Transaction
             {
                 Id = Guid.NewGuid(),
                 AccountId = toAccount.Id,
                 CounterpartyAccountId = fromAccount.Id,
-                Amount = request.Amount,
-                Currency = request.Currency,
+                Amount = dto.Amount,
+                Currency = dto.Currency,
                 Type = TransactionType.Credit,
-                Description = request.Description,
+                Description = dto.Description,
                 Timestamp = DateTime.UtcNow
             };
             toAccount.Transactions.Add(creditTransaction);
+            _accountRepository.Update(toAccount);
 
             return Ok(new
             {

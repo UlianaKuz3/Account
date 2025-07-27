@@ -1,3 +1,4 @@
+using AccountService.Features.Accounts;
 using Microsoft.OpenApi.Models;
 using System.Text.Json.Serialization;
 
@@ -8,6 +9,8 @@ builder.Services.AddOpenApi();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+builder.Services.AddSingleton<IAccountRepository, InMemoryAccountRepository>();
 
 builder.Services
     .AddControllers()

@@ -1,26 +1,25 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using System.Security.Principal;
 
 namespace AccountService.Features.Accounts.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class AccountsController : ControllerBase
+    public class AccountsController(IAccountRepository repository) : ControllerBase
     {
-        public static readonly List<Account> Accounts = new();
+        private readonly IAccountRepository _repository = repository;
 
         [HttpGet]
         public ActionResult<IEnumerable<Account>> GetAll()
         {
-            return Ok(Accounts);
+            return Ok(_repository.GetAll());
         }
 
         [HttpGet("{id:guid}")]
         public ActionResult<Account> GetById(Guid id)
         {
-            var account = Accounts.FirstOrDefault(a => a.Id == id);
-            if (account == null)
-                return NotFound();
-
+            var account = _repository.GetById(id);
+            if (account is null) return NotFound();
             return Ok(account);
         }
 
@@ -29,7 +28,7 @@ namespace AccountService.Features.Accounts.Controllers
         {
             account.Id = Guid.NewGuid();
             account.OpenDate = DateTime.UtcNow;
-            Accounts.Add(account);
+            _repository.Add(account);
 
             var locationUri = $"{Request.Host}/api/Accounts/{account.Id}";
 
@@ -39,35 +38,25 @@ namespace AccountService.Features.Accounts.Controllers
         [HttpPut("{id:guid}")]
         public IActionResult Update(Guid id, [FromBody] Account updated)
         {
-            var existing = Accounts.FirstOrDefault(a => a.Id == id);
-            if (existing == null)
-                return NotFound();
+            var existing = _repository.GetById(id);
+            if (existing == null) return NotFound();
 
-            existing.OwnerId = updated.OwnerId;
-            existing.Type = updated.Type;
-            existing.Currency = updated.Currency;
-            existing.Balance = updated.Balance;
-            existing.InterestRate = updated.InterestRate;
-            existing.CloseDate = updated.CloseDate;
-
+            updated.Id = id; 
+            _repository.Update(updated);
             return NoContent();
         }
 
         [HttpDelete("{id:guid}")]
         public IActionResult Delete(Guid id)
         {
-            var existing = Accounts.FirstOrDefault(a => a.Id == id);
-            if (existing == null)
-                return NotFound();
-
-            Accounts.Remove(existing);
+            _repository.Delete(id);
             return NoContent();
         }
 
         [HttpGet("check/{ownerId:guid}")]
         public ActionResult<bool> HasAccount(Guid ownerId)
         {
-            bool has = Accounts.Any(a => a.OwnerId == ownerId);
+            bool has = _repository.GetAll().Any(a => a.OwnerId == ownerId);
             return Ok(has);
         }
     }

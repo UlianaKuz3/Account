@@ -1,6 +1,6 @@
 ﻿namespace AccountService.Features.Accounts
 {
-    public class InMemoryAccountRepository
+    public class InMemoryAccountRepository: IAccountRepository
     {
         private readonly List<Account> _accounts = new();
 
