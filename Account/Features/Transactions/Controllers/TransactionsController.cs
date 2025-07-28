@@ -25,19 +25,9 @@ namespace AccountService.Features.Transactions.Controllers
                 dto.Description
             );
 
-            try
-            {
-                var transaction = await _mediator.Send(command);
-                return Ok(transaction);
-            }
-            catch (KeyNotFoundException ex)
-            {
-                return NotFound(ex.Message);
-            }
-            catch (InvalidOperationException ex)
-            {
-                return BadRequest(ex.Message);
-            }
+            var transaction = await _mediator.Send(command);
+            return Ok(transaction);
+
         }
 
         [HttpPost("transfer")]
@@ -51,19 +41,9 @@ namespace AccountService.Features.Transactions.Controllers
                 dto.Description
             );
 
-            try
-            {
-                var result = await _mediator.Send(command);
-                return Ok(new { result.Debit, result.Credit });
-            }
-            catch (KeyNotFoundException ex)
-            {
-                return NotFound(ex.Message);
-            }
-            catch (InvalidOperationException ex)
-            {
-                return BadRequest(ex.Message);
-            }
+            var result = await _mediator.Send(command);
+            return Ok(new { result.Debit, result.Credit });
+
         }
     }
 }
