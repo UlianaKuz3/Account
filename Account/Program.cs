@@ -1,5 +1,6 @@
 using AccountService.Features;
 using AccountService.Features.Accounts;
+using AccountService.Features.Accounts.Services;
 using FluentValidation;
 using MediatR;
 using Microsoft.OpenApi.Models;
@@ -22,6 +23,8 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddSingleton<IAccountRepository, InMemoryAccountRepository>();
+builder.Services.AddSingleton<IClientVerificationService, ClientVerificationServiceStub>();
+builder.Services.AddSingleton<ICurrencyService, CurrencyServiceStub>();
 
 builder.Services
     .AddControllers()
