@@ -5,11 +5,10 @@ namespace AccountService.Features.Transactions.RegisterTransaction
 {
     public class RegisterTransactionHandler(IAccountRepository repository) : IRequestHandler<RegisterTransactionCommand, Transaction>
     {
-        private readonly IAccountRepository _repository = repository;
 
         public Task<Transaction> Handle(RegisterTransactionCommand request, CancellationToken cancellationToken)
         {
-            var account = _repository.GetById(request.AccountId);
+            var account = repository.GetById(request.AccountId);
             if (account == null)
                 throw new KeyNotFoundException($"Account {request.AccountId} not found");
 
@@ -45,7 +44,7 @@ namespace AccountService.Features.Transactions.RegisterTransaction
             };
 
             account.Transactions.Add(transaction);
-            _repository.Update(account);
+            repository.Update(account);
 
             return Task.FromResult(transaction);
         }

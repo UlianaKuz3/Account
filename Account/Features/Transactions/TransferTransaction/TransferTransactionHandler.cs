@@ -6,13 +6,12 @@ namespace AccountService.Features.Transactions.TransferTransaction
     public class TransferTransactionHandler(IAccountRepository repository) : IRequestHandler<TransferTransactionCommand, 
                                                                         (Transaction Debit, Transaction Credit)>
     {
-        private readonly IAccountRepository _repository = repository;
 
         public Task<(Transaction Debit, Transaction Credit)> Handle(TransferTransactionCommand request, 
                                                                             CancellationToken cancellationToken)
         {
-            var fromAccount = _repository.GetById(request.FromAccountId);
-            var toAccount = _repository.GetById(request.ToAccountId);
+            var fromAccount = repository.GetById(request.FromAccountId);
+            var toAccount = repository.GetById(request.ToAccountId);
 
             if (fromAccount == null || toAccount == null)
                 throw new KeyNotFoundException("One of the accounts not found");
@@ -39,7 +38,7 @@ namespace AccountService.Features.Transactions.TransferTransaction
                 Timestamp = DateTime.UtcNow
             };
             fromAccount.Transactions.Add(debitTransaction);
-            _repository.Update(fromAccount);
+            repository.Update(fromAccount);
 
             toAccount.Balance += request.Amount;
             var creditTransaction = new Transaction
@@ -54,7 +53,7 @@ namespace AccountService.Features.Transactions.TransferTransaction
                 Timestamp = DateTime.UtcNow
             };
             toAccount.Transactions.Add(creditTransaction);
-            _repository.Update(toAccount);
+            repository.Update(toAccount);
 
             return Task.FromResult((debitTransaction, creditTransaction));
         }

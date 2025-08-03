@@ -1,6 +1,4 @@
-﻿using AccountService.Features.Accounts;
-using AccountService.Features.Accounts.Controllers;
-using AccountService.Features.Transactions.RegisterTransaction;
+﻿using AccountService.Features.Transactions.RegisterTransaction;
 using AccountService.Features.Transactions.TransferTransaction;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
@@ -11,7 +9,6 @@ namespace AccountService.Features.Transactions.Controllers
     [Route("api/[controller]")]
     public class TransactionsController(IMediator mediator) : ControllerBase
     {
-        private readonly IMediator _mediator = mediator;
 
         [HttpPost]
         public async Task<IActionResult> RegisterTransaction([FromBody] RegisterTransactionDto dto)
@@ -25,7 +22,7 @@ namespace AccountService.Features.Transactions.Controllers
                 dto.Description
             );
 
-            var transaction = await _mediator.Send(command);
+            var transaction = await mediator.Send(command);
             return Ok(transaction);
 
         }
@@ -41,7 +38,7 @@ namespace AccountService.Features.Transactions.Controllers
                 dto.Description
             );
 
-            var result = await _mediator.Send(command);
+            var result = await mediator.Send(command);
             return Ok(new { result.Debit, result.Credit });
 
         }

@@ -2,7 +2,7 @@
 {
     public class InMemoryAccountRepository: IAccountRepository
     {
-        private readonly List<Account> _accounts = new();
+        private readonly List<Account> _accounts = [];
 
         public List<Account> GetAll()
         {
