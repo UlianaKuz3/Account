@@ -5,6 +5,7 @@ using Account.Features.Accounts.GetAllAccounts;
 using Account.Features.Accounts.HasAccount;
 using Account.Features.Accounts.UpdateAccount;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Account.Features.Accounts.Controllers
@@ -14,6 +15,7 @@ namespace Account.Features.Accounts.Controllers
     /// </summary>
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
     public class AccountsController(IMediator mediator) : ControllerBase
     {
         /// <summary>

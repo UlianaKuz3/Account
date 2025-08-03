@@ -1,12 +1,14 @@
 ﻿using Account.Features.Transactions.RegisterTransaction;
 using Account.Features.Transactions.TransferTransaction;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Account.Features.Transactions.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
     public class TransactionsController(IMediator mediator) : ControllerBase
     {
 
