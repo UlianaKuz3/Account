@@ -28,7 +28,6 @@ namespace AccountService.Features.Accounts.Controllers
         public async Task<IActionResult> GetById(Guid id)
         {
             var account = await _mediator.Send(new GetAccountByIdQuery(id));
-            if (account is null) return NotFound();
             return Ok(account);
         }
 
@@ -47,7 +46,6 @@ namespace AccountService.Features.Accounts.Controllers
             var updated = command with { Id = id };
             var result = await _mediator.Send(updated);
 
-            if (!result) return NotFound();
             return NoContent();
         }
 

@@ -16,6 +16,11 @@
                 context.Response.StatusCode = StatusCodes.Status400BadRequest;
                 await context.Response.WriteAsJsonAsync(new { Errors = ex.Errors.Select(e => e.ErrorMessage) });
             }
+            catch (NotFoundException ex)
+            {
+                context.Response.StatusCode = StatusCodes.Status404NotFound;
+                await context.Response.WriteAsJsonAsync(new { Error = ex.Message });
+            }
             catch (KeyNotFoundException ex)
             {
                 context.Response.StatusCode = StatusCodes.Status404NotFound;

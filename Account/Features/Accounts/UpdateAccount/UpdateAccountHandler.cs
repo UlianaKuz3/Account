@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using System.Security.Principal;
 
 namespace AccountService.Features.Accounts.UpdateAccount
 {
@@ -9,7 +10,8 @@ namespace AccountService.Features.Accounts.UpdateAccount
         public Task<bool> Handle(UpdateAccountCommand request, CancellationToken cancellationToken)
         {
             var existing = _repository.GetById(request.Id);
-            if (existing == null) return Task.FromResult(false);
+            if (existing == null)
+                throw new NotFoundException($"Account {request.Id} not found");
 
             existing.Currency = request.Currency;
             existing.Balance = request.Balance;
