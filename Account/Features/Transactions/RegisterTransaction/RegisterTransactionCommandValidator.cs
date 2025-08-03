@@ -1,6 +1,6 @@
 ﻿using FluentValidation;
 
-namespace AccountService.Features.Transactions.RegisterTransaction
+namespace Account.Features.Transactions.RegisterTransaction
 {
     public class RegisterTransactionCommandValidator : AbstractValidator<RegisterTransactionCommand>
     {

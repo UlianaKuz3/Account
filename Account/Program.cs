@@ -1,6 +1,6 @@
-using AccountService.Features;
-using AccountService.Features.Accounts;
-using AccountService.Features.Accounts.Services;
+using Account.Features;
+using Account.Features.Accounts;
+using Account.Features.Accounts.Services;
 using FluentValidation;
 using MediatR;
 using System.Reflection;
@@ -39,7 +39,19 @@ builder.Services.AddSwaggerGen(c =>
     c.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));
 });
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll", policy =>
+    {
+        policy.AllowAnyOrigin()
+            .AllowAnyMethod()
+            .AllowAnyHeader();
+    });
+});
+
 var app = builder.Build();
+
+app.UseCors("AllowAll");
 
 if (app.Environment.IsDevelopment())
 {
@@ -51,6 +63,7 @@ app.UseSwaggerUI();
 
 app.UseHttpsRedirection();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.UseMiddleware<ExceptionHandlingMiddleware>();

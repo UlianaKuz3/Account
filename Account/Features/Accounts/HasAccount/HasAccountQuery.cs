@@ -1,6 +1,6 @@
 ﻿using MediatR;
 
-namespace AccountService.Features.Accounts.HasAccount
+namespace Account.Features.Accounts.HasAccount
 {
     public record HasAccountQuery(Guid OwnerId) : IRequest<bool>;
 }

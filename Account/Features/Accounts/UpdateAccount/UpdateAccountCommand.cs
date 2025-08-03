@@ -1,6 +1,6 @@
 ﻿using MediatR;
 
-namespace AccountService.Features.Accounts.UpdateAccount
+namespace Account.Features.Accounts.UpdateAccount
 {
     public record UpdateAccountCommand(Guid Id, Guid OwnerId,
                                             string Currency, decimal Balance,

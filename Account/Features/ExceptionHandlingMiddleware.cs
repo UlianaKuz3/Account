@@ -1,4 +1,4 @@
-﻿namespace AccountService.Features
+﻿namespace Account.Features
 {
     public class ExceptionHandlingMiddleware(RequestDelegate next, ILogger<ExceptionHandlingMiddleware> logger)
     {

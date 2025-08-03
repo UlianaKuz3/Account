@@ -1,6 +1,6 @@
 ﻿using MediatR;
 
-namespace AccountService.Features.Accounts.HasAccount
+namespace Account.Features.Accounts.HasAccount
 {
     public class HasAccountHandler(IAccountRepository repository) : IRequestHandler<HasAccountQuery, bool>
     {

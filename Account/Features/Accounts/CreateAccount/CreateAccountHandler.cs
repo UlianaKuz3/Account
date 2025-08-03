@@ -1,8 +1,8 @@
-﻿using AccountService.Features.Accounts.Services;
+﻿using Account.Features.Accounts.Services;
 using FluentValidation;
 using MediatR;
 
-namespace AccountService.Features.Accounts.CreateAccount
+namespace Account.Features.Accounts.CreateAccount
 {
     public class CreateAccountHandler(IAccountRepository repository, IClientVerificationService clientService,
         ICurrencyService currencyService) : IRequestHandler<CreateAccountCommand, Account>

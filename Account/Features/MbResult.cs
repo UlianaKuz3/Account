@@ -1,5 +1,5 @@
 ﻿
-namespace AccountService.Features
+namespace Account.Features
 {
     public class MbResult
     {

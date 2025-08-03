@@ -1,9 +1,9 @@
-﻿using AccountService.Features.Transactions.RegisterTransaction;
-using AccountService.Features.Transactions.TransferTransaction;
+﻿using Account.Features.Transactions.RegisterTransaction;
+using Account.Features.Transactions.TransferTransaction;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
-namespace AccountService.Features.Transactions.Controllers
+namespace Account.Features.Transactions.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]

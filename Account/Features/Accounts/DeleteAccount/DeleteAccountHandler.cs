@@ -1,6 +1,6 @@
 ﻿using MediatR;
 
-namespace AccountService.Features.Accounts.DeleteAccount
+namespace Account.Features.Accounts.DeleteAccount
 {
     public class DeleteAccountHandler(IAccountRepository repository) : IRequestHandler<DeleteAccountCommand>
     {

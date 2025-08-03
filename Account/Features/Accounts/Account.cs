@@ -1,6 +1,6 @@
-﻿using AccountService.Features.Transactions;
+﻿using Account.Features.Transactions;
 
-namespace AccountService.Features.Accounts
+namespace Account.Features.Accounts
 {
     public class Account
     {

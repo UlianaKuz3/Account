@@ -1,6 +1,6 @@
 ﻿using MediatR;
 
-namespace AccountService.Features.Accounts.UpdateAccount
+namespace Account.Features.Accounts.UpdateAccount
 {
     public class UpdateAccountHandler(IAccountRepository repository) : IRequestHandler<UpdateAccountCommand, bool>
     {

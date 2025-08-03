@@ -1,7 +1,7 @@
-﻿using AccountService.Features.Accounts;
+﻿using Account.Features.Accounts;
 using MediatR;
 
-namespace AccountService.Features.Transactions.RegisterTransaction
+namespace Account.Features.Transactions.RegisterTransaction
 {
     public class RegisterTransactionHandler(IAccountRepository repository) : IRequestHandler<RegisterTransactionCommand, Transaction>
     {
