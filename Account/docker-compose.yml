@@ -7,7 +7,7 @@ services:
       - "8080:80"
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
-      - Jwt__Key=supersecretkey!123
+      - Jwt__Key=supersecretkeysupersecretkey123456
       - Jwt__Issuer=AccountApi
       - Jwt__Audience=AccountApiClient
       - ASPNETCORE_URLS=http://+:80

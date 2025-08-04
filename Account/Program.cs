@@ -121,12 +121,7 @@ builder.Services.AddAuthentication(options =>
 
 var app = builder.Build();
 
-app.Use(async (context, next) =>
-{
-    var middleware = context.RequestServices.GetRequiredService<ExceptionHandlingMiddleware>();
-    await middleware.InvokeAsync(context);
-    await next.Invoke();
-});
+app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 app.UseCors("AllowAll");
 

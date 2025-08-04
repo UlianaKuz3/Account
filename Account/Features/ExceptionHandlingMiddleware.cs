@@ -3,6 +3,7 @@
     public class ExceptionHandlingMiddleware(RequestDelegate next, ILogger<ExceptionHandlingMiddleware> logger)
     {
 
+        // ReSharper disable once UnusedMember.Global Этот метод вызывается автоматически в качестве middleware.
         public async Task InvokeAsync(HttpContext context)
         {
             try
