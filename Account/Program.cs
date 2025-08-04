@@ -1,10 +1,13 @@
 using Account.Features;
 using Account.Features.Accounts;
+using Account.Features.Accounts.CreateAccount;
 using Account.Features.Accounts.Services;
+using Account.Features.Accounts.UpdateAccount;
+using Account.Features.Transactions.RegisterTransaction;
+using Account.Features.Transactions.TransferTransaction;
 using FluentValidation;
 using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System.Reflection;
 using System.Text;
@@ -28,6 +31,11 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddSingleton<IAccountRepository, InMemoryAccountRepository>();
 builder.Services.AddSingleton<IClientVerificationService, ClientVerificationServiceStub>();
 builder.Services.AddSingleton<ICurrencyService, CurrencyServiceStub>();
+
+builder.Services.AddScoped<IValidator<CreateAccountCommand>, CreateAccountCommandValidator>();
+builder.Services.AddScoped<IValidator<UpdateAccountCommand>, UpdateAccountCommandValidator>();
+builder.Services.AddScoped<IValidator<RegisterTransactionCommand>, RegisterTransactionCommandValidator>();
+builder.Services.AddScoped<IValidator<TransferTransactionCommand>, TransferTransactionCommandValidator>();
 
 builder.Services
     .AddControllers()
@@ -71,7 +79,7 @@ builder.Services.AddSwaggerGen(options =>
         }
     });
 
-    var xmlFilename = $"{System.Reflection.Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    var xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
     options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));
 });
 
@@ -112,6 +120,13 @@ builder.Services.AddAuthentication(options =>
 
 
 var app = builder.Build();
+
+app.Use(async (context, next) =>
+{
+    var middleware = context.RequestServices.GetRequiredService<ExceptionHandlingMiddleware>();
+    await middleware.InvokeAsync(context);
+    await next.Invoke();
+});
 
 app.UseCors("AllowAll");
 

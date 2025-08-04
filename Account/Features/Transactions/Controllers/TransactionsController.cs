@@ -6,12 +6,26 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Account.Features.Transactions.Controllers
 {
+    /// <summary>
+    /// Транзакции
+    /// </summary>
     [ApiController]
     [Route("api/[controller]")]
     [Authorize]
     public class TransactionsController(IMediator mediator) : ControllerBase
     {
-
+        /// <summary>
+        /// Регистрирует новую транзакцию (поступление или списание) по счёту.
+        /// </summary>
+        /// <param name="dto">
+        /// Данные для регистрации транзакции: 
+        /// идентификатор счёта, счёт контрагента, сумма, валюта, тип (списание/поступление) и описание.
+        /// </param>
+        /// <returns>
+        /// Возвращает зарегистрированную транзакцию.
+        /// </returns>
+        /// <response code="200">Успешно создана транзакция</response>
+        /// <response code="400">Ошибки валидации данных</response>
         [HttpPost]
         public async Task<IActionResult> RegisterTransaction([FromBody] RegisterTransactionDto dto)
         {
@@ -29,6 +43,19 @@ namespace Account.Features.Transactions.Controllers
 
         }
 
+        /// <summary>
+        /// Выполняет перевод средств между двумя счетами.
+        /// </summary>
+        /// <param name="dto">
+        /// Данные перевода: 
+        /// счёт отправителя, счёт получателя, сумма, валюта и назначение.
+        /// </param>
+        /// <returns>
+        /// Возвращает результат перевода с деталями по дебету и кредиту.
+        /// </returns>
+        /// <response code="200">Перевод успешно выполнен</response>
+        /// <response code="400">Ошибки валидации данных</response>
+        /// <response code="404">Один из счетов не найден</response>
         [HttpPost("transfer")]
         public async Task<IActionResult> Transfer([FromBody] TransferDto dto)
         {

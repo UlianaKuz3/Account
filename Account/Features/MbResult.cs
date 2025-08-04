@@ -15,30 +15,10 @@ namespace Account.Features
             };
         }
 
-        public static MbResult<T> Fail<T>(MbError error)
-        {
-            return new MbResult<T>
-            {
-                IsSuccess = false,
-                Error = error
-            };
-        }
 
-        public static MbResult Success()
-        {
-            return new MbResult { IsSuccess = true };
-        }
-
-        public static MbResult<T> Success<T>(T data)
-        {
-            return new MbResult<T> { IsSuccess = true, Data = data };
-        }
     }
 
-    public class MbResult<T> : MbResult
-    {
-        public T? Data { get; set; }
-    }
+
 
     public class MbError
     {

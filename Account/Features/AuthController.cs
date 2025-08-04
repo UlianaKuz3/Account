@@ -29,8 +29,8 @@ namespace Account.Features
 
             var claims = new List<Claim>
             {
-                new Claim(JwtRegisteredClaimNames.Sub, username),
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+                new(JwtRegisteredClaimNames.Sub, username),
+                new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
             };
 
 
@@ -54,10 +54,6 @@ namespace Account.Features
         /// <summary>
         /// Имя пользователя
         /// </summary>
-        public string? Username { get; set; } = null;
-        /// <summary>
-        /// Пароль пользователя
-        /// </summary>
-        public string? Password { get; set; } = null;
+        public required string Username { get; set; }
     }
 }

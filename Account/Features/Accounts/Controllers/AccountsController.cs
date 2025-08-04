@@ -73,7 +73,7 @@ namespace Account.Features.Accounts.Controllers
         public async Task<IActionResult> Update(Guid id, [FromBody] UpdateAccountCommand command)
         {
             var updated = command with { Id = id };
-            var result = await mediator.Send(updated);
+            await mediator.Send(updated);
 
             return NoContent();
         }
