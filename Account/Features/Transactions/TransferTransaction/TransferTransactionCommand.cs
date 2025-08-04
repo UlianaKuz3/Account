@@ -1,6 +1,6 @@
 ﻿using MediatR;
 
-namespace AccountService.Features.Transactions.TransferTransaction
+namespace Account.Features.Transactions.TransferTransaction
 {
     public record TransferTransactionCommand(Guid FromAccountId, Guid ToAccountId,
                                             decimal Amount, string Currency,
