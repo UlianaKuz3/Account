@@ -1,4 +1,4 @@
-﻿namespace AccountService.Features.Transactions
+﻿namespace Account.Features.Transactions
 {
     public class TransferDto
     {

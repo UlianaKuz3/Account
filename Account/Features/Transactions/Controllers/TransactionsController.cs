@@ -1,18 +1,31 @@
-﻿using AccountService.Features.Accounts;
-using AccountService.Features.Accounts.Controllers;
-using AccountService.Features.Transactions.RegisterTransaction;
-using AccountService.Features.Transactions.TransferTransaction;
+﻿using Account.Features.Transactions.RegisterTransaction;
+using Account.Features.Transactions.TransferTransaction;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace AccountService.Features.Transactions.Controllers
+namespace Account.Features.Transactions.Controllers
 {
+    /// <summary>
+    /// Транзакции
+    /// </summary>
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
     public class TransactionsController(IMediator mediator) : ControllerBase
     {
-        private readonly IMediator _mediator = mediator;
-
+        /// <summary>
+        /// Регистрирует новую транзакцию (поступление или списание) по счёту.
+        /// </summary>
+        /// <param name="dto">
+        /// Данные для регистрации транзакции: 
+        /// идентификатор счёта, счёт контрагента, сумма, валюта, тип (списание/поступление) и описание.
+        /// </param>
+        /// <returns>
+        /// Возвращает зарегистрированную транзакцию.
+        /// </returns>
+        /// <response code="200">Успешно создана транзакция</response>
+        /// <response code="400">Ошибки валидации данных</response>
         [HttpPost]
         public async Task<IActionResult> RegisterTransaction([FromBody] RegisterTransactionDto dto)
         {
@@ -25,11 +38,24 @@ namespace AccountService.Features.Transactions.Controllers
                 dto.Description
             );
 
-            var transaction = await _mediator.Send(command);
+            var transaction = await mediator.Send(command);
             return Ok(transaction);
 
         }
 
+        /// <summary>
+        /// Выполняет перевод средств между двумя счетами.
+        /// </summary>
+        /// <param name="dto">
+        /// Данные перевода: 
+        /// счёт отправителя, счёт получателя, сумма, валюта и назначение.
+        /// </param>
+        /// <returns>
+        /// Возвращает результат перевода с деталями по дебету и кредиту.
+        /// </returns>
+        /// <response code="200">Перевод успешно выполнен</response>
+        /// <response code="400">Ошибки валидации данных</response>
+        /// <response code="404">Один из счетов не найден</response>
         [HttpPost("transfer")]
         public async Task<IActionResult> Transfer([FromBody] TransferDto dto)
         {
@@ -41,7 +67,7 @@ namespace AccountService.Features.Transactions.Controllers
                 dto.Description
             );
 
-            var result = await _mediator.Send(command);
+            var result = await mediator.Send(command);
             return Ok(new { result.Debit, result.Credit });
 
         }

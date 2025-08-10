@@ -1,6 +1,6 @@
-﻿using AccountService.Features.Transactions;
+﻿using Account.Features.Transactions;
 
-namespace AccountService.Features.Accounts
+namespace Account.Features.Accounts
 {
     public class Account
     {
@@ -20,6 +20,6 @@ namespace AccountService.Features.Accounts
 
         public DateTime? CloseDate { get; set; }
 
-        public List<Transaction> Transactions { get; set; } = new();
+        public List<Transaction> Transactions { get; set; } = [];
     }
 }
