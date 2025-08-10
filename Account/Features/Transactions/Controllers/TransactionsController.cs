@@ -1,10 +1,10 @@
-﻿using Account.Features.Transactions.RegisterTransaction;
-using Account.Features.Transactions.TransferTransaction;
+﻿using AccountServices.Features.Transactions.RegisterTransaction;
+using AccountServices.Features.Transactions.TransferTransaction;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Account.Features.Transactions.Controllers
+namespace AccountServices.Features.Transactions.Controllers
 {
     /// <summary>
     /// Транзакции

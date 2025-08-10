@@ -1,6 +1,6 @@
 ﻿using MediatR;
 
-namespace Account.Features.Transactions.RegisterTransaction
+namespace AccountServices.Features.Transactions.RegisterTransaction
 {
     public record RegisterTransactionCommand(Guid AccountId, Guid? CounterpartyAccountId,
                                                     decimal Amount, string Currency,

@@ -1,7 +1,7 @@
-﻿using Account.Features.Accounts;
+﻿using AccountServices.Features.Accounts;
 using MediatR;
 
-namespace Account.Features.Transactions.TransferTransaction
+namespace AccountServices.Features.Transactions.TransferTransaction
 {
     public class TransferTransactionHandler(IAccountRepository repository) : IRequestHandler<TransferTransactionCommand, 
                                                                         (Transaction Debit, Transaction Credit)>

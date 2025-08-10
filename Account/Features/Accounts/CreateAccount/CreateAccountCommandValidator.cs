@@ -1,6 +1,6 @@
 ﻿using FluentValidation;
 
-namespace Account.Features.Accounts.CreateAccount
+namespace AccountServices.Features.Accounts.CreateAccount
 {
     public class CreateAccountCommandValidator : AbstractValidator<CreateAccountCommand>
     {

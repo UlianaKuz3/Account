@@ -1,6 +1,6 @@
 ﻿using FluentValidation;
 
-namespace Account.Features.Accounts.UpdateAccount
+namespace AccountServices.Features.Accounts.UpdateAccount
 {
     public class UpdateAccountCommandValidator : AbstractValidator<UpdateAccountCommand>
     {

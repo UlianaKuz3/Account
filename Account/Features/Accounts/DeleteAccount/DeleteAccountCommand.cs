@@ -1,6 +1,6 @@
 ﻿using MediatR;
 
-namespace Account.Features.Accounts.DeleteAccount
+namespace AccountServices.Features.Accounts.DeleteAccount
 {
     public record DeleteAccountCommand(Guid Id) : IRequest;
 }

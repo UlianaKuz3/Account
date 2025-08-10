@@ -1,6 +1,6 @@
 ﻿using MediatR;
 
-namespace Account.Features.Accounts.GetAccountById
+namespace AccountServices.Features.Accounts.GetAccountById
 {
     public class GetAccountByIdHandler(IAccountRepository repository) : IRequestHandler<GetAccountByIdQuery, Account?>
     {

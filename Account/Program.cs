@@ -1,13 +1,14 @@
-using Account.Features;
-using Account.Features.Accounts;
-using Account.Features.Accounts.CreateAccount;
-using Account.Features.Accounts.Services;
-using Account.Features.Accounts.UpdateAccount;
-using Account.Features.Transactions.RegisterTransaction;
-using Account.Features.Transactions.TransferTransaction;
+using AccountServices.Features;
+using AccountServices.Features.Accounts;
+using AccountServices.Features.Accounts.CreateAccount;
+using AccountServices.Features.Accounts.Services;
+using AccountServices.Features.Accounts.UpdateAccount;
+using AccountServices.Features.Transactions.RegisterTransaction;
+using AccountServices.Features.Transactions.TransferTransaction;
 using FluentValidation;
 using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Reflection;
 using System.Text;
@@ -28,7 +29,7 @@ builder.Services.AddOpenApi();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddSingleton<IAccountRepository, InMemoryAccountRepository>();
+//builder.Services.AddSingleton<IAccountRepository, InMemoryAccountRepository>();
 builder.Services.AddSingleton<IClientVerificationService, ClientVerificationServiceStub>();
 builder.Services.AddSingleton<ICurrencyService, CurrencyServiceStub>();
 
@@ -117,9 +118,18 @@ builder.Services.AddAuthentication(options =>
         };
     });
 
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+builder.Services.AddScoped<IAccountRepository, AccountRepository>();
 
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    db.Database.Migrate();
+}
 
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 
