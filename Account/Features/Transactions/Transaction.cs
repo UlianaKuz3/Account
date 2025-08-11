@@ -1,4 +1,6 @@
-﻿namespace AccountServices.Features.Transactions
+﻿using System.ComponentModel.DataAnnotations.Schema;
+
+namespace AccountServices.Features.Transactions
 {
     public class Transaction
     {
@@ -10,10 +12,12 @@
 
         public decimal Amount { get; set; }
 
+        [Column(TypeName = "char(3)")]
         public string Currency { get; set; } = "RUB";
 
         public TransactionType Type { get; set; }
 
+        [Column(TypeName = "char(100)")]
         public string Description { get; set; } = string.Empty;
 
         public DateTime Timestamp { get; set; }

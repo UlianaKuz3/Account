@@ -7,6 +7,8 @@ using AccountServices.Features.Transactions.RegisterTransaction;
 using AccountServices.Features.Transactions.Services;
 using AccountServices.Features.Transactions.TransferTransaction;
 using FluentValidation;
+using Hangfire;
+using Hangfire.PostgreSql;
 using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -30,7 +32,6 @@ builder.Services.AddOpenApi();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-//builder.Services.AddSingleton<IAccountRepository, InMemoryAccountRepository>();
 builder.Services.AddSingleton<IClientVerificationService, ClientVerificationServiceStub>();
 builder.Services.AddSingleton<ICurrencyService, CurrencyServiceStub>();
 
@@ -39,7 +40,6 @@ builder.Services.AddScoped<IValidator<UpdateAccountCommand>, UpdateAccountComman
 builder.Services.AddScoped<IValidator<RegisterTransactionCommand>, RegisterTransactionCommandValidator>();
 builder.Services.AddScoped<IValidator<TransferTransactionCommand>, TransferTransactionCommandValidator>();
 
-builder.Services.AddHostedService<InterestAccrualService>();
 
 builder.Services
     .AddControllers()
@@ -126,7 +126,22 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 builder.Services.AddScoped<IAccountRepository, AccountRepository>();
 
+builder.Services.AddHangfire(configuration =>
+    configuration.UsePostgreSqlStorage(options =>
+        options.UseNpgsqlConnection(builder.Configuration.GetConnectionString("DefaultConnection"))));
+
+builder.Services.AddHangfireServer();
+
+builder.Services.AddScoped<InterestAccrualService>();
+
 var app = builder.Build();
+
+app.UseHangfireDashboard();
+
+RecurringJob.AddOrUpdate<InterestAccrualService>(
+    "InterestAccrualJob",
+    service => service.AccrueInterestAsync(),
+    Cron.Daily);
 
 using (var scope = app.Services.CreateScope())
 {
@@ -157,4 +172,6 @@ app.MapControllers();
 
 app.Run();
 
+
+// ReSharper disable once RedundantTypeDeclarationBody Для тестов
 public partial class Program { }

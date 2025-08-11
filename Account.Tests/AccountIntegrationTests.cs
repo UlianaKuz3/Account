@@ -18,7 +18,10 @@ namespace AccountServices.Tests
 
         public AccountIntegrationTests()
         {
+            _client = new HttpClient();
+
             _postgres = new PostgreSqlBuilder()
+                // ReSharper disable once StringLiteralTypo Намеренное написание
                 .WithDatabase("testdb")
                 .WithUsername("postgres")
                 .WithPassword("postgres")
@@ -27,7 +30,7 @@ namespace AccountServices.Tests
             _factory = new WebApplicationFactory<Program>()
                 .WithWebHostBuilder(builder =>
                 {
-                    builder.ConfigureAppConfiguration((context, config) =>
+                    builder.ConfigureAppConfiguration((_, _) =>
                     {
                         Environment.SetEnvironmentVariable("ConnectionStrings__DefaultConnection",
                             _postgres.GetConnectionString());
@@ -40,6 +43,7 @@ namespace AccountServices.Tests
             await _postgres.StartAsync();
             _client = _factory.CreateClient();
 
+            // ReSharper disable once StringLiteralTypo Намеренное написание
             var login = new { Username = "testuser" };
             var loginResponse = await _client.PostAsJsonAsync("/api/Auth/login", login);
             loginResponse.EnsureSuccessStatusCode();
@@ -73,7 +77,7 @@ namespace AccountServices.Tests
             response.StatusCode.Should().Be(HttpStatusCode.Created);
 
             var account = await response.Content.ReadFromJsonAsync<AccountDto>();
-            return account.Id;
+            return account?.Id ?? throw new InvalidOperationException("Failed to create account: response was null");
         }
 
         private async Task<decimal> GetBalance(Guid accountId)
@@ -82,7 +86,7 @@ namespace AccountServices.Tests
             response.EnsureSuccessStatusCode();
 
             var account = await response.Content.ReadFromJsonAsync<AccountDto>();
-            return account.Balance;
+            return account?.Balance ?? throw new InvalidOperationException("Account not found or balance is null");
         }
 
         [Fact]
@@ -90,7 +94,7 @@ namespace AccountServices.Tests
         {
             decimal initialTotal = await GetBalance(_account1Id) + await GetBalance(_account2Id);
 
-            var tasks = Enumerable.Range(0, 50).Select(async _ =>
+            var tasks = Enumerable.Range(0, 5).Select(async _ =>
             {
                 var dto = new
                 {

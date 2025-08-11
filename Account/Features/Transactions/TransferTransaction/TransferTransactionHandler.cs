@@ -1,36 +1,35 @@
-﻿using AccountServices.Features.Accounts;
+﻿using System.Data;
+using AccountServices.Features.Accounts;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using System.Data;
+using Npgsql;
 
 namespace AccountServices.Features.Transactions.TransferTransaction
 {
     public class TransferTransactionHandler : IRequestHandler<TransferTransactionCommand, (Transaction Debit, Transaction Credit)>
     {
-        private readonly IAccountRepository _repository;
         private readonly AppDbContext _dbContext;
 
         public TransferTransactionHandler(IAccountRepository repository, AppDbContext dbContext)
         {
-            _repository = repository;
             _dbContext = dbContext;
         }
 
         public async Task<(Transaction Debit, Transaction Credit)> Handle(TransferTransactionCommand request, CancellationToken cancellationToken)
         {
             await using var transaction = await _dbContext.Database.BeginTransactionAsync(
-                System.Data.IsolationLevel.Serializable,
+                IsolationLevel.Serializable,
                 cancellationToken);
 
             try
             {
                 var fromAccount = await _dbContext.Accounts
-                    .AsTracking()
-                    .FirstOrDefaultAsync(a => a.Id == request.FromAccountId, cancellationToken); ;
+                    .Include(x => x.Transactions)
+                    .FirstOrDefaultAsync(a => a.Id == request.FromAccountId, cancellationToken);
 
                 var toAccount = await _dbContext.Accounts
-                    .AsTracking()
-                    .FirstOrDefaultAsync(a => a.Id == request.ToAccountId, cancellationToken); ;
+                    .Include(x => x.Transactions)
+                    .FirstOrDefaultAsync(a => a.Id == request.ToAccountId, cancellationToken);
 
                 if (fromAccount == null || toAccount == null)
                     throw new KeyNotFoundException("One of the accounts not found");
@@ -46,7 +45,6 @@ namespace AccountServices.Features.Transactions.TransferTransaction
 
                 var debitTransaction = new Transaction
                 {
-                    Id = Guid.NewGuid(),
                     AccountId = fromAccount.Id,
                     CounterpartyAccountId = toAccount.Id,
                     Amount = request.Amount,
@@ -58,7 +56,6 @@ namespace AccountServices.Features.Transactions.TransferTransaction
 
                 var creditTransaction = new Transaction
                 {
-                    Id = Guid.NewGuid(),
                     AccountId = toAccount.Id,
                     CounterpartyAccountId = fromAccount.Id,
                     Amount = request.Amount,
@@ -82,8 +79,18 @@ namespace AccountServices.Features.Transactions.TransferTransaction
 
                 return (debitTransaction, creditTransaction);
             }
-            catch (Exception ex)
+            catch (InvalidOperationException ex) 
+                when (ex.InnerException is DbUpdateException
+                      {
+                          InnerException: PostgresException { SqlState: "40001" }
+                      })
             {
+                await transaction.RollbackAsync(cancellationToken);
+                throw new ConcurrencyException("Conflict detected. Please try again.");
+            }
+            catch (Exception)
+            {
+                
                 await transaction.RollbackAsync(cancellationToken);
                 throw;
             }

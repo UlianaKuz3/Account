@@ -5,27 +5,15 @@ using AccountServices.Features.Accounts.GetAccountById;
 using AccountServices.Features.Accounts.GetAllAccounts;
 using AccountServices.Features.Accounts.Services;
 using Moq;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
 
 namespace AccountServices.Tests
 {
     public class AccountHandlersTests
     {
-        private readonly Mock<IAccountRepository> _repositoryMock;
-        private readonly Mock<IClientVerificationService> _clientServiceMock;
-        private readonly Mock<ICurrencyService> _currencyServiceMock;
-
-        public AccountHandlersTests()
-        {
-            _repositoryMock = new Mock<IAccountRepository>();
-            _clientServiceMock = new Mock<IClientVerificationService>();
-            _currencyServiceMock = new Mock<ICurrencyService>();
-        }
+        private readonly Mock<IAccountRepository> _repositoryMock = new();
+        private readonly Mock<IClientVerificationService> _clientServiceMock = new();
+        private readonly Mock<ICurrencyService> _currencyServiceMock = new();
 
         [Fact]
         public async Task CreateAccountHandler_ShouldCreateAccount_WhenValidData()
@@ -70,7 +58,7 @@ namespace AccountServices.Tests
             var result = await handler.Handle(query, CancellationToken.None);
 
             Assert.NotNull(result);
-            Assert.Equal(accountId, result!.Id);
+            Assert.Equal(accountId, result.Id);
         }
 
         [Fact]
@@ -90,10 +78,10 @@ namespace AccountServices.Tests
         public async Task GetAllAccountsHandler_ShouldReturnAllAccounts()
         {
             var accounts = new List<Account>
-        {
-            new Account{ Id = Guid.NewGuid() },
-            new Account { Id = Guid.NewGuid() }
-        };
+            {
+                new (){ Id = Guid.NewGuid() },
+                new () { Id = Guid.NewGuid() }
+            };
             _repositoryMock.Setup(r => r.GetAll()).Returns(accounts);
 
             var handler = new GetAllAccountsHandler(_repositoryMock.Object);

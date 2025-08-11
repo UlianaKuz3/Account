@@ -4,15 +4,18 @@ namespace AccountServices.Features
 {
 #nullable disable
 
+    // ReSharper disable once UnusedMember.Global Нужно для миграций
     public class AddIndexesAndProcedure : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            // ReSharper disable once StringLiteralTypo Намеренное написание
             migrationBuilder.Sql(@"
         CREATE INDEX IF NOT EXISTS idx_accounts_ownerid
         ON ""Accounts"" USING hash(""ownerId"");
     ");
 
+            // ReSharper disable once StringLiteralTypo Намеренное написание
             migrationBuilder.Sql(@"
         CREATE INDEX IF NOT EXISTS idx_transactions_accountid_date
         ON ""Transactions""(""accountId"", ""date"");
@@ -23,6 +26,7 @@ namespace AccountServices.Features
         ON ""Transactions"" USING brin(""date"");
     ");
 
+            // ReSharper disable once StringLiteralTypo Намеренное написание
             migrationBuilder.Sql(@"
         CREATE OR REPLACE PROCEDURE accrue_interest(account_id UUID)
         LANGUAGE plpgsql
@@ -38,11 +42,13 @@ namespace AccountServices.Features
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.Sql(@"DROP INDEX IF EXISTS idx_accounts_ownerid;");
-            migrationBuilder.Sql(@"DROP INDEX IF EXISTS idx_transactions_accountid_date;");
-            migrationBuilder.Sql(@"DROP INDEX IF EXISTS idx_transactions_date_brin;");
+            // ReSharper disable once StringLiteralTypo Намеренное написание
+            migrationBuilder.Sql("DROP INDEX IF EXISTS idx_accounts_ownerid;");
+            // ReSharper disable once StringLiteralTypo Намеренное написание
+            migrationBuilder.Sql("DROP INDEX IF EXISTS idx_transactions_accountid_date;");
+            migrationBuilder.Sql("DROP INDEX IF EXISTS idx_transactions_date_brin;");
 
-            migrationBuilder.Sql(@"DROP PROCEDURE IF EXISTS accrue_interest(UUID);");
+            migrationBuilder.Sql("DROP PROCEDURE IF EXISTS accrue_interest(UUID);");
         }
     }
 }
