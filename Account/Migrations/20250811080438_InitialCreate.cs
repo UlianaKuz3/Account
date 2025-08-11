@@ -22,7 +22,8 @@ namespace AccountServices.Migrations
                     Balance = table.Column<decimal>(type: "numeric", nullable: false),
                     InterestRate = table.Column<decimal>(type: "numeric", nullable: true),
                     OpenDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    CloseDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
+                    CloseDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    xmin = table.Column<uint>(type: "xid", rowVersion: true, nullable: false)
                 },
                 constraints: table =>
                 {
