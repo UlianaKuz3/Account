@@ -19,7 +19,7 @@ namespace AccountServices.Features
             modelBuilder.Entity<Transaction>(entity =>
             {
                 entity.HasIndex(t => new { t.AccountId, t.Timestamp });
-                entity.HasIndex(t => t.Timestamp).HasMethod("gist");
+                entity.HasIndex(t => t.Timestamp).HasMethod("brin");
             });
         }
     }

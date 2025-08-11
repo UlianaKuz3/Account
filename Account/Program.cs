@@ -4,6 +4,7 @@ using AccountServices.Features.Accounts.CreateAccount;
 using AccountServices.Features.Accounts.Services;
 using AccountServices.Features.Accounts.UpdateAccount;
 using AccountServices.Features.Transactions.RegisterTransaction;
+using AccountServices.Features.Transactions.Services;
 using AccountServices.Features.Transactions.TransferTransaction;
 using FluentValidation;
 using MediatR;
@@ -37,6 +38,8 @@ builder.Services.AddScoped<IValidator<CreateAccountCommand>, CreateAccountComman
 builder.Services.AddScoped<IValidator<UpdateAccountCommand>, UpdateAccountCommandValidator>();
 builder.Services.AddScoped<IValidator<RegisterTransactionCommand>, RegisterTransactionCommandValidator>();
 builder.Services.AddScoped<IValidator<TransferTransactionCommand>, TransferTransactionCommandValidator>();
+
+builder.Services.AddHostedService<InterestAccrualService>();
 
 builder.Services
     .AddControllers()

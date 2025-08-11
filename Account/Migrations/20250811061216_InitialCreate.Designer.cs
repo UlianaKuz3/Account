@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace AccountServices.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250810094129_InitialCreate")]
+    [Migration("20250811061216_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -55,6 +55,10 @@ namespace AccountServices.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("OwnerId");
+
+                    NpgsqlIndexBuilderExtensions.HasMethod(b.HasIndex("OwnerId"), "hash");
+
                     b.ToTable("Accounts");
                 });
 
@@ -89,7 +93,11 @@ namespace AccountServices.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("AccountId");
+                    b.HasIndex("Timestamp");
+
+                    NpgsqlIndexBuilderExtensions.HasMethod(b.HasIndex("Timestamp"), "brin");
+
+                    b.HasIndex("AccountId", "Timestamp");
 
                     b.ToTable("Transactions");
                 });

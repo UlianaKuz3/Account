@@ -52,6 +52,10 @@ namespace AccountServices.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("OwnerId");
+
+                    NpgsqlIndexBuilderExtensions.HasMethod(b.HasIndex("OwnerId"), "hash");
+
                     b.ToTable("Accounts");
                 });
 
@@ -86,7 +90,11 @@ namespace AccountServices.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("AccountId");
+                    b.HasIndex("Timestamp");
+
+                    NpgsqlIndexBuilderExtensions.HasMethod(b.HasIndex("Timestamp"), "brin");
+
+                    b.HasIndex("AccountId", "Timestamp");
 
                     b.ToTable("Transactions");
                 });

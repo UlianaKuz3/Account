@@ -54,9 +54,21 @@ namespace AccountServices.Migrations
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_Transactions_AccountId",
+                name: "IX_Accounts_OwnerId",
+                table: "Accounts",
+                column: "OwnerId")
+                .Annotation("Npgsql:IndexMethod", "hash");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Transactions_AccountId_Timestamp",
                 table: "Transactions",
-                column: "AccountId");
+                columns: new[] { "AccountId", "Timestamp" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Transactions_Timestamp",
+                table: "Transactions",
+                column: "Timestamp")
+                .Annotation("Npgsql:IndexMethod", "brin");
         }
 
         /// <inheritdoc />
