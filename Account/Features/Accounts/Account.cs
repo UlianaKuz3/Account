@@ -1,4 +1,6 @@
 ﻿using AccountServices.Features.Transactions;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace AccountServices.Features.Accounts
 {
@@ -21,5 +23,9 @@ namespace AccountServices.Features.Accounts
         public DateTime? CloseDate { get; set; }
 
         public List<Transaction> Transactions { get; set; } = [];
+
+        [ConcurrencyCheck]
+        [Column("xmin")]
+        public uint xmin { get; set; }
     }
 }
