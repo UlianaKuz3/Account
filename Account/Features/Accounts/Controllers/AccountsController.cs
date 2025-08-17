@@ -1,14 +1,14 @@
-﻿using Account.Features.Accounts.CreateAccount;
-using Account.Features.Accounts.DeleteAccount;
-using Account.Features.Accounts.GetAccountById;
-using Account.Features.Accounts.GetAllAccounts;
-using Account.Features.Accounts.HasAccount;
-using Account.Features.Accounts.UpdateAccount;
+﻿using AccountServices.Features.Accounts.CreateAccount;
+using AccountServices.Features.Accounts.DeleteAccount;
+using AccountServices.Features.Accounts.GetAccountById;
+using AccountServices.Features.Accounts.GetAllAccounts;
+using AccountServices.Features.Accounts.HasAccount;
+using AccountServices.Features.Accounts.UpdateAccount;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Account.Features.Accounts.Controllers
+namespace AccountServices.Features.Accounts.Controllers
 {
     /// <summary>
     /// Банковский счёт.

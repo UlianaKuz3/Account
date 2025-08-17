@@ -1,6 +1,6 @@
 ﻿using MediatR;
 
-namespace Account.Features.Accounts.GetAllAccounts
+namespace AccountServices.Features.Accounts.GetAllAccounts
 {
     public record GetAllAccountsQuery : IRequest<IEnumerable<Account>>;
 }

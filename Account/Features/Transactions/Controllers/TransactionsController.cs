@@ -1,10 +1,10 @@
-﻿using Account.Features.Transactions.RegisterTransaction;
-using Account.Features.Transactions.TransferTransaction;
+﻿using AccountServices.Features.Transactions.RegisterTransaction;
+using AccountServices.Features.Transactions.TransferTransaction;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Account.Features.Transactions.Controllers
+namespace AccountServices.Features.Transactions.Controllers
 {
     /// <summary>
     /// Транзакции
@@ -59,16 +59,24 @@ namespace Account.Features.Transactions.Controllers
         [HttpPost("transfer")]
         public async Task<IActionResult> Transfer([FromBody] TransferDto dto)
         {
-            var command = new TransferTransactionCommand(
-                dto.FromAccountId,
-                dto.ToAccountId,
-                dto.Amount,
-                dto.Currency,
-                dto.Description
-            );
+            try
+            {
+                var command = new TransferTransactionCommand(
+                    dto.FromAccountId,
+                    dto.ToAccountId,
+                    dto.Amount,
+                    dto.Currency,
+                    dto.Description
+                );
 
-            var result = await mediator.Send(command);
-            return Ok(new { result.Debit, result.Credit });
+                var result = await mediator.Send(command);
+                return Ok(new { result.Debit, result.Credit });
+            }
+            catch (ConcurrencyException ex)
+            {
+                return Conflict(new { Error = ex.Message });
+            }
+            
 
         }
     }

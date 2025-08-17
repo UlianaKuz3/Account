@@ -1,6 +1,6 @@
 ﻿using FluentValidation;
 
-namespace Account.Features.Transactions.TransferTransaction
+namespace AccountServices.Features.Transactions.TransferTransaction
 {
     public class TransferTransactionCommandValidator : AbstractValidator<TransferTransactionCommand>
     {

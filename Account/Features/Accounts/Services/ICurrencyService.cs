@@ -1,4 +1,4 @@
-﻿namespace Account.Features.Accounts.Services
+﻿namespace AccountServices.Features.Accounts.Services
 {
     public interface ICurrencyService
     {

@@ -27,3 +27,21 @@
 ### Transactions
 - `POST /api/transactions` – зарегистрировать транзакцию (пополнение или списание)
 - `POST /api/transactions/transfer` – перевести средства между счетами
+
+## Запуск
+## Локально
+- Установите зависимости
+- Примените миграции
+
+dotnet ef database update
+
+- Запустите проект
+
+## Docker
+- Соберите образ
+
+docker build -t account-service .
+
+- Запуск
+
+docker-compose up --build

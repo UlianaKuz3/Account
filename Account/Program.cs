@@ -1,13 +1,17 @@
-using Account.Features;
-using Account.Features.Accounts;
-using Account.Features.Accounts.CreateAccount;
-using Account.Features.Accounts.Services;
-using Account.Features.Accounts.UpdateAccount;
-using Account.Features.Transactions.RegisterTransaction;
-using Account.Features.Transactions.TransferTransaction;
+using AccountServices.Features;
+using AccountServices.Features.Accounts;
+using AccountServices.Features.Accounts.CreateAccount;
+using AccountServices.Features.Accounts.Services;
+using AccountServices.Features.Accounts.UpdateAccount;
+using AccountServices.Features.Transactions.RegisterTransaction;
+using AccountServices.Features.Transactions.Services;
+using AccountServices.Features.Transactions.TransferTransaction;
 using FluentValidation;
+using Hangfire;
+using Hangfire.PostgreSql;
 using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Reflection;
 using System.Text;
@@ -28,7 +32,6 @@ builder.Services.AddOpenApi();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddSingleton<IAccountRepository, InMemoryAccountRepository>();
 builder.Services.AddSingleton<IClientVerificationService, ClientVerificationServiceStub>();
 builder.Services.AddSingleton<ICurrencyService, CurrencyServiceStub>();
 
@@ -36,6 +39,7 @@ builder.Services.AddScoped<IValidator<CreateAccountCommand>, CreateAccountComman
 builder.Services.AddScoped<IValidator<UpdateAccountCommand>, UpdateAccountCommandValidator>();
 builder.Services.AddScoped<IValidator<RegisterTransactionCommand>, RegisterTransactionCommandValidator>();
 builder.Services.AddScoped<IValidator<TransferTransactionCommand>, TransferTransactionCommandValidator>();
+
 
 builder.Services
     .AddControllers()
@@ -117,9 +121,33 @@ builder.Services.AddAuthentication(options =>
         };
     });
 
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+builder.Services.AddScoped<IAccountRepository, AccountRepository>();
+
+builder.Services.AddHangfire(configuration =>
+    configuration.UsePostgreSqlStorage(options =>
+        options.UseNpgsqlConnection(builder.Configuration.GetConnectionString("DefaultConnection"))));
+
+builder.Services.AddHangfireServer();
+
+builder.Services.AddScoped<InterestAccrualService>();
 
 var app = builder.Build();
+
+app.UseHangfireDashboard();
+
+RecurringJob.AddOrUpdate<InterestAccrualService>(
+    "InterestAccrualJob",
+    service => service.AccrueInterestAsync(),
+    Cron.Daily);
+
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    db.Database.Migrate();
+}
 
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 
@@ -143,3 +171,7 @@ app.UseMiddleware<ExceptionHandlingMiddleware>();
 app.MapControllers();
 
 app.Run();
+
+
+// ReSharper disable once RedundantTypeDeclarationBody Для тестов
+public partial class Program { }
