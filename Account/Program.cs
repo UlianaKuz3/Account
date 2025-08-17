@@ -138,6 +138,10 @@ var app = builder.Build();
 
 app.UseHangfireDashboard();
 
+RecurringJob.AddOrUpdate<OutboxPublisherJob>(
+    job => job.PublishOutboxMessages(),
+    Cron.Minutely);
+
 RecurringJob.AddOrUpdate<InterestAccrualService>(
     "InterestAccrualJob",
     service => service.AccrueInterestAsync(),

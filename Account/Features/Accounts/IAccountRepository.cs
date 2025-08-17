@@ -1,4 +1,6 @@
-﻿namespace AccountServices.Features.Accounts
+﻿using AccountServices.Features.Entities;
+
+namespace AccountServices.Features.Accounts
 {
     public interface IAccountRepository
     {
@@ -7,5 +9,8 @@
         void Add(Account account);
         void Update(Account account);
         void Delete(Guid id);
+
+        void AddOutboxMessage(OutboxMessage message);
+        Task SaveChangesAsync(CancellationToken cancellationToken = default);
     }
 }
