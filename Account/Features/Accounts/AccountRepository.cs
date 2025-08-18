@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using AccountServices.Features.Entities;
+using Microsoft.EntityFrameworkCore;
 
 namespace AccountServices.Features.Accounts
 {
@@ -32,6 +33,14 @@ namespace AccountServices.Features.Accounts
                 context.SaveChanges();
             }
         }
+
+        public void AddOutboxMessage(OutboxMessage message)
+        {
+            context.Outbox.Add(message);
+        }
+
+        public Task SaveChangesAsync(CancellationToken cancellationToken = default) 
+        => context.SaveChangesAsync(cancellationToken);
     }
 
 }

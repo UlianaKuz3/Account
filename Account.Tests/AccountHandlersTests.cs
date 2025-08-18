@@ -30,7 +30,8 @@ namespace AccountServices.Tests
                 AccountType.Checking,
                 "USD",
                 1000m,
-                0.01m
+                0.01m,
+                IsBlocked: false
             );
 
             var result = await handler.Handle(command, CancellationToken.None);

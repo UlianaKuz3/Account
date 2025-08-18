@@ -1,4 +1,6 @@
-﻿using AccountServices.Features.Accounts.Services;
+﻿using System.Text.Json;
+using AccountServices.Features.Accounts.Services;
+using AccountServices.Features.Entities;
 using FluentValidation;
 using MediatR;
 
@@ -24,10 +26,27 @@ namespace AccountServices.Features.Accounts.CreateAccount
                 Currency = request.Currency,
                 Balance = request.Balance,
                 InterestRate = request.InterestRate,
-                OpenDate = DateTime.UtcNow
+                OpenDate = DateTime.UtcNow,
+                IsBlocked = request.IsBlocked
             };
 
             repository.Add(account);
+
+            var evt = new
+            {
+                AccountId = account.Id
+            };
+
+            var outbox = new OutboxMessage
+            {
+                Type = "AccountCreated",
+                RoutingKey = "account.created",
+                Payload = JsonSerializer.Serialize(evt)
+            };
+
+            repository.AddOutboxMessage(outbox);
+
+            repository.SaveChangesAsync(cancellationToken);
 
             return Task.FromResult(account);
         }

@@ -1,8 +1,10 @@
-﻿using System.Data;
-using AccountServices.Features.Accounts;
+﻿using AccountServices.Features.Accounts;
+using AccountServices.Features.Entities;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
+using System.Data;
+using System.Text.Json;
 
 namespace AccountServices.Features.Transactions.TransferTransaction
 {
@@ -73,6 +75,23 @@ namespace AccountServices.Features.Transactions.TransferTransaction
 
                 if (fromAccount.Balance < 0 || toAccount.Balance < 0)
                     throw new InvalidOperationException("Balance validation failed after transfer");
+
+                var evt = new
+                {
+                    FromId = fromAccount.Id,
+                    ToId = toAccount.Id
+                };
+
+                var outbox = new OutboxMessage
+                {
+                    Type = "MoneyTransferred",
+                    RoutingKey = "money.transferred",
+                    Payload = JsonSerializer.Serialize(evt)
+                };
+
+                _dbContext.Outbox.Add(outbox);
+
+                await _dbContext.SaveChangesAsync(cancellationToken);
 
                 await _dbContext.SaveChangesAsync(cancellationToken);
                 await transaction.CommitAsync(cancellationToken);

@@ -1,4 +1,6 @@
-﻿using AccountServices.Features.Accounts;
+﻿using System.Text.Json;
+using AccountServices.Features.Accounts;
+using AccountServices.Features.Entities;
 using MediatR;
 
 namespace AccountServices.Features.Transactions.RegisterTransaction
@@ -11,6 +13,9 @@ namespace AccountServices.Features.Transactions.RegisterTransaction
             var account = repository.GetById(request.AccountId);
             if (account == null)
                 throw new KeyNotFoundException($"Account {request.AccountId} not found");
+
+            if (account.IsBlocked)
+                throw new ClientBlockedException(account.Id);
 
             if (!string.Equals(account.Currency, request.Currency, StringComparison.OrdinalIgnoreCase))
                 throw new InvalidOperationException("Currency mismatch");
@@ -33,7 +38,6 @@ namespace AccountServices.Features.Transactions.RegisterTransaction
 
             var transaction = new Transaction
             {
-                Id = Guid.NewGuid(),
                 AccountId = request.AccountId,
                 CounterpartyAccountId = request.CounterpartyAccountId,
                 Amount = request.Amount,
@@ -46,6 +50,21 @@ namespace AccountServices.Features.Transactions.RegisterTransaction
             account.Transactions.Add(transaction);
             repository.Update(account);
 
+            var evt = new
+            {
+                transactionId = transaction.Id
+            };
+
+            var outbox = new OutboxMessage
+            {
+                Type = "TransactionRegistered",
+                RoutingKey = "money.transferred",
+                Payload = JsonSerializer.Serialize(evt)
+            };
+
+            repository.AddOutboxMessage(outbox);
+
+            repository.SaveChangesAsync(cancellationToken);
             return Task.FromResult(transaction);
         }
     }

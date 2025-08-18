@@ -1,45 +1,61 @@
 services:
-  postgres:
-    container_name: postgres
-    image: postgres:15
-    user: "postgres"
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: kua21
-      POSTGRES_DB: postgres
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
-    networks:
-      - db-network
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d postgres"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
+    rabbitmq:
+        image: rabbitmq:3.13-management
+        container_name: rabbitmq
+        ports:
+          - "5672:5672"  
+          - "15672:15672"
+        environment:
+          RABBITMQ_DEFAULT_USER: user
+          RABBITMQ_DEFAULT_PASS: password
+        volumes:
+          - ./rabbitmq-definitions.json:/etc/rabbitmq/definitions.json
+          - rabbitmq_data:/var/lib/rabbitmq/mnesia
+        command: >
+          bash -c "rabbitmq-server
+          --load-definitions=/etc/rabbitmq/definitions.json"
+    postgres:
+        container_name: postgres
+        image: postgres:15
+        user: "postgres"
+        environment:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: kua21
+          POSTGRES_DB: postgres
+        volumes:
+          - postgres_data:/var/lib/postgresql/data
+        ports:
+          - "5432:5432"
+        networks:
+          - db-network
+        healthcheck:
+          test: ["CMD-SHELL", "pg_isready -U postgres -d postgres"]
+          interval: 5s
+          timeout: 5s
+          retries: 5
 
-  account-api:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    ports:
-      - "8080:80"
-    environment:
-      ASPNETCORE_ENVIRONMENT: Production
-      Jwt__Key: supersecretkeysupersecretkey123456
-      Jwt__Issuer: AccountApi
-      Jwt__Audience: AccountApiClient
-      ASPNETCORE_URLS: http://+:80
-      ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=postgres;Username=postgres;Password=kua21"
-    depends_on:
-      postgres:
-        condition: service_healthy
-    networks:
-      - db-network
+    account-api:
+        build:
+          context: .
+          dockerfile: Dockerfile
+        ports:
+          - "8080:80"
+        environment:
+          ASPNETCORE_ENVIRONMENT: Production
+          Jwt__Key: supersecretkeysupersecretkey123456
+          Jwt__Issuer: AccountApi
+          Jwt__Audience: AccountApiClient
+          ASPNETCORE_URLS: http://+:80
+          ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=postgres;Username=postgres;Password=kua21"
+        depends_on:
+          postgres:
+            condition: service_healthy
+        networks:
+          - db-network
 
 volumes:
   postgres_data:
+  rabbitmq_data:
 
 networks:
   db-network:
