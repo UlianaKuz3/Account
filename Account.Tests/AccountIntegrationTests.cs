@@ -1,17 +1,29 @@
-﻿using FluentAssertions;
+﻿using AccountServices.Features;
+using AccountServices.Features.Accounts;
+using AccountServices.Features.Entities;
+using AccountServices.Features.Transactions;
+using FluentAssertions;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Logging;
+using RabbitMQ.Client;
 using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using System.Text.Json;
 using Testcontainers.PostgreSql;
+using Testcontainers.RabbitMq;
 
 namespace AccountServices.Tests
 {
     public class AccountIntegrationTests : IAsyncLifetime
     {
         private readonly PostgreSqlContainer _postgres;
-        private readonly WebApplicationFactory<Program> _factory;
+        private WebApplicationFactory<Program> _factory;
         private HttpClient _client;
+        private RabbitMqContainer _rabbitMqContainer;
 
         private Guid _account1Id;
         private Guid _account2Id;
@@ -27,6 +39,15 @@ namespace AccountServices.Tests
                 .WithPassword("postgres")
                 .Build();
 
+           // _postgres.StartAsync().res
+            //_postgres.GetConnectionString();
+
+            _rabbitMqContainer = new RabbitMqBuilder()
+                .WithImage("rabbitmq:3.13-management")
+                .WithPortBinding(5672, true) // Expose AMQP port
+                .WithPortBinding(15672, true) 
+                .Build();
+
             _factory = new WebApplicationFactory<Program>()
                 .WithWebHostBuilder(builder =>
                 {
@@ -40,8 +61,39 @@ namespace AccountServices.Tests
 
         public async Task InitializeAsync()
         {
-            await _postgres.StartAsync();
+            await Task.WhenAll(
+                _postgres.StartAsync(),
+                _rabbitMqContainer.StartAsync()
+            );
+
+            _factory = _factory.WithWebHostBuilder(builder =>
+            {
+                builder.ConfigureServices(services =>
+                {
+                    services.RemoveAll<DbContextOptions<AppDbContext>>();
+                    services.AddDbContext<AppDbContext>(options =>
+                        options.UseNpgsql(_postgres.GetConnectionString()));
+
+   
+                    services.AddSingleton(sp =>
+                    {
+                        var factory = new ConnectionFactory
+                        {
+                            HostName = "localhost",
+                            Port = _rabbitMqContainer.GetMappedPublicPort(5672),
+                            UserName = "rabbitmq",
+                            Password = "rabbitmq"
+                        };
+
+                        return factory.CreateConnection();
+                    });
+
+
+                });
+            });
+
             _client = _factory.CreateClient();
+            
 
             // ReSharper disable once StringLiteralTypo Намеренное написание
             var login = new { Username = "testuser" };
@@ -117,5 +169,64 @@ namespace AccountServices.Tests
         }
 
         public record AccountDto(Guid Id, decimal Balance);
+
+        [Fact]
+        public async Task OutboxPublishesAfterFailure()
+        {
+            using var scope = _factory.Services.CreateScope();
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+            var accountId = Guid.NewGuid();
+            db.Outbox.Add(new OutboxMessage
+            {
+                Id = Guid.NewGuid(),
+                Type = "account.opened",
+                Payload = JsonSerializer.Serialize(new { AccountId = accountId }),
+                RoutingKey = "account.opened",
+                CreatedAt = DateTime.UtcNow
+            });
+            await db.SaveChangesAsync();
+
+            var job = new OutboxPublisherJob(
+                scope.ServiceProvider.GetRequiredService<IServiceScopeFactory>(),
+                scope.ServiceProvider.GetRequiredService<ILogger<OutboxPublisherJob>>(),
+                scope.ServiceProvider.GetRequiredService<IConnection>());
+
+            await job.PublishOutboxMessages();
+
+            using var assertScope = _factory.Services.CreateScope();
+            var assertDb = assertScope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+            var msg = await assertDb.Outbox.FirstAsync(m => m.Type == "account.opened");
+            Assert.NotNull(msg.Processed);
+        }
+
+        [Fact]
+        public async Task ClientBlockedPreventsDebit()
+        {
+            using var scope = _factory.Services.CreateScope();
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            var clientId = Guid.NewGuid();
+            var account = new Account { Id = Guid.NewGuid(), OwnerId = clientId, Balance = 1000, Currency = "USD", IsBlocked = true };
+
+            var res = await _client.PostAsJsonAsync("/api/accounts", account);
+            res.StatusCode.Should().Be(HttpStatusCode.Created);
+            var createdAccount = await res.Content.ReadFromJsonAsync<AccountDto>();
+
+            var dto = new RegisterTransactionDto
+            {
+                AccountId = createdAccount.Id,
+                CounterpartyAccountId = Guid.NewGuid(),
+                Amount = 100,
+                Currency = "USD",
+                Type = TransactionType.Debit,
+                Description = "Test debit"
+            };
+
+            var response = await _client.PostAsJsonAsync("api/Transactions", dto);
+
+            Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
+
+        }
     }
 }

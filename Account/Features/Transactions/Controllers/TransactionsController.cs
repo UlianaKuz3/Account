@@ -29,17 +29,24 @@ namespace AccountServices.Features.Transactions.Controllers
         [HttpPost]
         public async Task<IActionResult> RegisterTransaction([FromBody] RegisterTransactionDto dto)
         {
-            var command = new RegisterTransactionCommand(
-                dto.AccountId,
-                dto.CounterpartyAccountId,
-                dto.Amount,
-                dto.Currency,
-                dto.Type,
-                dto.Description
-            );
+            try
+            {
+                var command = new RegisterTransactionCommand(
+                    dto.AccountId,
+                    dto.CounterpartyAccountId,
+                    dto.Amount,
+                    dto.Currency,
+                    dto.Type,
+                    dto.Description
+                );
 
-            var transaction = await mediator.Send(command);
-            return Ok(transaction);
+                var transaction = await mediator.Send(command);
+                return Ok(transaction);
+            }
+            catch (ClientBlockedException ex)
+            {
+                return Conflict(new { message = ex.Message });
+            }
 
         }
 

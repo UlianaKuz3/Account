@@ -7,13 +7,13 @@ namespace AccountServices.Features
 {
     public class OutboxPublisherJob
     {
-        private readonly IServiceProvider _provider;
+        private readonly IServiceScopeFactory _scopeFactory;
         private readonly ILogger<OutboxPublisherJob> _logger;
         private readonly IConnection _rabbitConnection;
 
-        public OutboxPublisherJob(IServiceProvider provider, ILogger<OutboxPublisherJob> logger, IConnection rabbitConnection)
+        public OutboxPublisherJob(IServiceScopeFactory scopeFactory, ILogger<OutboxPublisherJob> logger, IConnection rabbitConnection)
         {
-            _provider = provider;
+            _scopeFactory = scopeFactory;
             _logger = logger;
             _rabbitConnection = rabbitConnection;
         }
@@ -21,7 +21,7 @@ namespace AccountServices.Features
         [AutomaticRetry(Attempts = 5)]
         public async Task PublishOutboxMessages()
         {
-            using var scope = _provider.CreateScope();
+            using var scope = _scopeFactory.CreateScope();
             var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
             var messages = await db.Outbox

@@ -26,7 +26,8 @@ namespace AccountServices.Features.Accounts.CreateAccount
                 Currency = request.Currency,
                 Balance = request.Balance,
                 InterestRate = request.InterestRate,
-                OpenDate = DateTime.UtcNow
+                OpenDate = DateTime.UtcNow,
+                IsBlocked = request.IsBlocked
             };
 
             repository.Add(account);

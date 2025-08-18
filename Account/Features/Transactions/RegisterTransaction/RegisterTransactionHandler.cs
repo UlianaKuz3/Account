@@ -14,6 +14,9 @@ namespace AccountServices.Features.Transactions.RegisterTransaction
             if (account == null)
                 throw new KeyNotFoundException($"Account {request.AccountId} not found");
 
+            if (account.IsBlocked)
+                throw new ClientBlockedException(account.Id);
+
             if (!string.Equals(account.Currency, request.Currency, StringComparison.OrdinalIgnoreCase))
                 throw new InvalidOperationException("Currency mismatch");
 

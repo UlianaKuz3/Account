@@ -33,5 +33,7 @@ namespace AccountServices.Features.Accounts
         // ReSharper disable once IdentifierTypo
         // ReSharper disable once UnusedMember.Global
         public uint xmin { get; set; }
+
+        public bool IsBlocked { get; set; }
     }
 }

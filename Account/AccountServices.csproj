@@ -29,6 +29,7 @@
     <PackageReference Include="Swashbuckle.AspNetCore" Version="9.0.3" />
     <!-- ReSharper disable once VulnerablePackage -->
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.0" />
+    <PackageReference Include="Testcontainers.RabbitMq" Version="4.6.0" />
   </ItemGroup>
 
 </Project>

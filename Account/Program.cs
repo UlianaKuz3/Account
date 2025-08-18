@@ -18,6 +18,8 @@ using Serilog;
 using System.Reflection;
 using System.Text;
 using System.Text.Json.Serialization;
+using AccountServices;
+using Testcontainers.RabbitMq;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -128,9 +130,26 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 builder.Services.AddScoped<IAccountRepository, AccountRepository>();
 
+builder.Services.AddScoped<OutboxPublisherJob>();
+builder.Services.AddScoped<IConnection>(sp =>
+{
+    var rabbitMqContainer = sp.GetRequiredService<RabbitMqContainer>(); // Получаем контейнер
+    var factory = new ConnectionFactory
+    {
+        HostName = rabbitMqContainer.Hostname,
+        Port = rabbitMqContainer.GetMappedPublicPort(5672),
+        UserName = "user",
+        Password = "password",
+        DispatchConsumersAsync = true
+    };
+    return factory.CreateConnection();
+});
+
 builder.Services.AddHangfire(configuration =>
-    configuration.UsePostgreSqlStorage(options =>
-        options.UseNpgsqlConnection(builder.Configuration.GetConnectionString("DefaultConnection"))));
+{
+    configuration.UsePostgreSqlStorage(builder.Configuration.GetConnectionString("DefaultConnection"));
+    configuration.UseActivator(new ScopedJobActivator(builder.Services.BuildServiceProvider()));
+});
 
 builder.Services.AddHangfireServer();
 
@@ -163,9 +182,9 @@ app.UseSerilogRequestLogging(options =>
 
 app.UseHangfireDashboard();
 
-RecurringJob.AddOrUpdate<OutboxPublisherJob>(
-    job => job.PublishOutboxMessages(),
-    Cron.Minutely);
+//RecurringJob.AddOrUpdate<OutboxPublisherJob>(
+//    job => job.PublishOutboxMessages(),
+//    Cron.Minutely);
 
 RecurringJob.AddOrUpdate<InterestAccrualService>(
     "InterestAccrualJob",
