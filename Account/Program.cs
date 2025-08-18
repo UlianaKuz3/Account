@@ -13,6 +13,7 @@ using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using RabbitMQ.Client;
 using System.Reflection;
 using System.Text;
 using System.Text.Json.Serialization;
@@ -145,6 +146,10 @@ RecurringJob.AddOrUpdate<OutboxPublisherJob>(
 RecurringJob.AddOrUpdate<InterestAccrualService>(
     "InterestAccrualJob",
     service => service.AccrueInterestAsync(),
+    Cron.Daily);
+
+RecurringJob.AddOrUpdate("setup-rabbit-topology",
+    () => RabbitTopologyInitializer.InitializeTopology("rabbitmq"),
     Cron.Daily);
 
 using (var scope = app.Services.CreateScope())
