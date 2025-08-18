@@ -3,23 +3,18 @@ using Testcontainers.RabbitMq;
 
 namespace AccountServices.Features
 {
-    public class RabbitMqContainerInitializer : IHostedService
+    // ReSharper disable once UnusedMember.Global
+    public class RabbitMqContainerInitializer(RabbitMqContainer container) : IHostedService
     {
-        private readonly RabbitMqContainer _container;
-
-        public RabbitMqContainerInitializer(RabbitMqContainer container)
-        {
-            _container = container;
-        }
 
         public async Task StartAsync(CancellationToken cancellationToken)
         {
-            await _container.StartAsync(cancellationToken);
+            await container.StartAsync(cancellationToken);
 
             using var connection = new ConnectionFactory
             {
-                HostName = _container.Hostname,
-                Port = _container.GetMappedPublicPort(5672),
+                HostName = container.Hostname,
+                Port = container.GetMappedPublicPort(5672),
                 UserName = "user",
                 Password = "password"
             }.CreateConnection();
@@ -30,7 +25,7 @@ namespace AccountServices.Features
 
         public async Task StopAsync(CancellationToken cancellationToken)
         {
-            await _container.DisposeAsync();
+            await container.DisposeAsync();
         }
     }
 }

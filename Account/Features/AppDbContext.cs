@@ -12,7 +12,9 @@ namespace AccountServices.Features
         public DbSet<Transaction> Transactions => Set<Transaction>();
 
         public DbSet<OutboxMessage> Outbox => Set<OutboxMessage>();
+        // ReSharper disable once UnusedMember.Global Таблица 
         public DbSet<InboxConsumed> InboxConsumed => Set<InboxConsumed>();
+        // ReSharper disable once UnusedMember.Global Таблица 
         public DbSet<InboxDeadLetter> InboxDeadLetters => Set<InboxDeadLetter>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

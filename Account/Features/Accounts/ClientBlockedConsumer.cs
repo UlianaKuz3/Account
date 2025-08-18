@@ -2,18 +2,14 @@
 
 namespace AccountServices.Features.Accounts
 {
-    public class ClientBlockedConsumer
+    // ReSharper disable once UnusedMember.Global Используется для блокировки
+    public class ClientBlockedConsumer(AppDbContext db)
     {
-        private readonly AppDbContext _db;
 
-        public ClientBlockedConsumer(AppDbContext db)
-        {
-            _db = db;
-        }
-
+        // ReSharper disable once UnusedMember.Global
         public async Task Handle(ClientBlocked evt)
         {
-            var accounts = await _db.Accounts
+            var accounts = await db.Accounts
                 .Where(a => a.OwnerId == evt.ClientId)
                 .ToListAsync();
 
@@ -22,7 +18,7 @@ namespace AccountServices.Features.Accounts
                 acc.IsBlocked = true;
             }
 
-            await _db.SaveChangesAsync();
+            await db.SaveChangesAsync();
         }
     }
 

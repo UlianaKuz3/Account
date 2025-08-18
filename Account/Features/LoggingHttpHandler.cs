@@ -2,25 +2,19 @@
 
 namespace AccountServices.Features
 {
-    public class LoggingHttpHandler : DelegatingHandler
+    public class LoggingHttpHandler(ILogger<LoggingHttpHandler> logger) : DelegatingHandler
     {
-        private readonly ILogger<LoggingHttpHandler> _logger;
-
-        public LoggingHttpHandler(ILogger<LoggingHttpHandler> logger)
-        {
-            _logger = logger;
-        }
 
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
             var sw = Stopwatch.StartNew();
 
-            _logger.LogInformation("Outgoing HTTP {Method} {Url}", request.Method, request.RequestUri);
+            logger.LogInformation("Outgoing HTTP {Method} {Url}", request.Method, request.RequestUri);
 
             var response = await base.SendAsync(request, cancellationToken);
 
             sw.Stop();
-            _logger.LogInformation(
+            logger.LogInformation(
                 "HTTP response {StatusCode} from {Url} in {Elapsed} ms",
                 (int)response.StatusCode,
                 request.RequestUri,

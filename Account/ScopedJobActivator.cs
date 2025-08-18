@@ -2,18 +2,13 @@
 
 namespace AccountServices
 {
-    public class ScopedJobActivator : JobActivator
+    // ReSharper disable once UnusedMember.Global
+    public class ScopedJobActivator(IServiceProvider serviceProvider) : JobActivator
     {
-        private readonly IServiceProvider _serviceProvider;
-
-        public ScopedJobActivator(IServiceProvider serviceProvider)
-        {
-            _serviceProvider = serviceProvider;
-        }
 
         public override object ActivateJob(Type jobType)
         {
-            return ActivatorUtilities.CreateInstance(_serviceProvider, jobType);
+            return ActivatorUtilities.CreateInstance(serviceProvider, jobType);
         }
     }
 }

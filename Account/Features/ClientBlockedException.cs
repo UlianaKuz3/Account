@@ -1,14 +1,9 @@
 ﻿namespace AccountServices.Features
 {
-    public class ClientBlockedException : Exception
+    public class ClientBlockedException(Guid accountId) : Exception($"Client for account {accountId} is blocked")
     {
-        public Guid AccountId { get; }
-
-        public ClientBlockedException(Guid accountId)
-            : base($"Client for account {accountId} is blocked")
-        {
-            AccountId = accountId;
-        }
+        // ReSharper disable once UnusedMember.Global
+        public Guid AccountId { get; } = accountId;
     }
 
 }

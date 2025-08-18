@@ -23,7 +23,7 @@ namespace AccountServices.Tests
         private readonly PostgreSqlContainer _postgres;
         private WebApplicationFactory<Program> _factory;
         private HttpClient _client;
-        private RabbitMqContainer _rabbitMqContainer;
+        private readonly RabbitMqContainer _rabbitMqContainer;
 
         private Guid _account1Id;
         private Guid _account2Id;
@@ -75,7 +75,7 @@ namespace AccountServices.Tests
                         options.UseNpgsql(_postgres.GetConnectionString()));
 
    
-                    services.AddSingleton(sp =>
+                    services.AddSingleton(_ =>
                     {
                         var factory = new ConnectionFactory
                         {
@@ -204,14 +204,13 @@ namespace AccountServices.Tests
         [Fact]
         public async Task ClientBlockedPreventsDebit()
         {
-            using var scope = _factory.Services.CreateScope();
-            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
             var clientId = Guid.NewGuid();
             var account = new Account { Id = Guid.NewGuid(), OwnerId = clientId, Balance = 1000, Currency = "USD", IsBlocked = true };
 
             var res = await _client.PostAsJsonAsync("/api/accounts", account);
             res.StatusCode.Should().Be(HttpStatusCode.Created);
             var createdAccount = await res.Content.ReadFromJsonAsync<AccountDto>();
+            createdAccount.Should().NotBeNull("Account creation should return the created account");
 
             var dto = new RegisterTransactionDto
             {

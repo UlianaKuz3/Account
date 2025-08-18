@@ -12,7 +12,7 @@ namespace AccountServices.Features.Events
     {
         /// <summary>Контракт и пример события AccountOpened.</summary>
         [HttpGet("account-opened")]
-        [SwaggerOperation(Tags = new[] { "Events" }, Summary = "AccountOpened sample")]
+        [SwaggerOperation(Tags = ["Events"], Summary = "AccountOpened sample")]
         [ProducesResponseType(typeof(EventEnvelope<AccountOpened>), StatusCodes.Status200OK)]
         [SwaggerResponseExample(StatusCodes.Status200OK, typeof(AccountOpenedExample))]
         public ActionResult<EventEnvelope<AccountOpened>> GetAccountOpenedSample()
@@ -20,7 +20,7 @@ namespace AccountServices.Features.Events
 
         /// <summary>Контракт и пример события MoneyCredited.</summary>
         [HttpGet("money-credited")]
-        [SwaggerOperation(Tags = new[] { "Events" }, Summary = "MoneyCredited sample")]
+        [SwaggerOperation(Tags = ["Events"], Summary = "MoneyCredited sample")]
         [ProducesResponseType(typeof(EventEnvelope<MoneyCredited>), StatusCodes.Status200OK)]
         [SwaggerResponseExample(StatusCodes.Status200OK, typeof(MoneyCreditedExample))]
         public ActionResult<EventEnvelope<MoneyCredited>> GetMoneyCreditedSample()
@@ -28,7 +28,7 @@ namespace AccountServices.Features.Events
 
         /// <summary>Контракт и пример события MoneyDebited.</summary>
         [HttpGet("money-debited")]
-        [SwaggerOperation(Tags = new[] { "Events" }, Summary = "MoneyDebited sample")]
+        [SwaggerOperation(Tags = ["Events"], Summary = "MoneyDebited sample")]
         [ProducesResponseType(typeof(EventEnvelope<MoneyDebited>), StatusCodes.Status200OK)]
         [SwaggerResponseExample(StatusCodes.Status200OK, typeof(MoneyDebitedExample))]
         public ActionResult<EventEnvelope<MoneyDebited>> GetMoneyDebitedSample()
@@ -36,7 +36,7 @@ namespace AccountServices.Features.Events
 
         /// <summary>Контракт и пример события TransferCompleted.</summary>
         [HttpGet("transfer-completed")]
-        [SwaggerOperation(Tags = new[] { "Events" }, Summary = "TransferCompleted sample")]
+        [SwaggerOperation(Tags = ["Events"], Summary = "TransferCompleted sample")]
         [ProducesResponseType(typeof(EventEnvelope<TransferCompleted>), StatusCodes.Status200OK)]
         [SwaggerResponseExample(StatusCodes.Status200OK, typeof(TransferCompletedExample))]
         public ActionResult<EventEnvelope<TransferCompleted>> GetTransferCompletedSample()

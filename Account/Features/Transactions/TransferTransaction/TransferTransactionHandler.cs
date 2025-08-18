@@ -79,8 +79,7 @@ namespace AccountServices.Features.Transactions.TransferTransaction
                 var evt = new
                 {
                     FromId = fromAccount.Id,
-                    ToId = toAccount.Id,
-                    Amount = request.Amount
+                    ToId = toAccount.Id
                 };
 
                 var outbox = new OutboxMessage

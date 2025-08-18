@@ -1,4 +1,3 @@
-using AccountServices;
 using AccountServices.Features;
 using AccountServices.Features.Accounts;
 using AccountServices.Features.Accounts.CreateAccount;
@@ -16,17 +15,14 @@ using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using RabbitMQ.Client;
 using Serilog;
 using Swashbuckle.AspNetCore.Filters;
 using System.Reflection;
 using System.Text;
 using System.Text.Json.Serialization;
 using HealthChecks.UI.Client;
-using Testcontainers.RabbitMq;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -156,7 +152,9 @@ builder.Services.AddScoped<IAccountRepository, AccountRepository>();
 
 builder.Services.AddHangfire(configuration =>
 {
+#pragma warning disable CS0618 // Type or member is obsolete
     configuration.UsePostgreSqlStorage(builder.Configuration.GetConnectionString("DefaultConnection"));
+#pragma warning restore CS0618 // Type or member is obsolete
 });
 
 builder.Services.AddHangfireServer();
@@ -184,7 +182,7 @@ builder.Services.AddHealthChecks()
         "amqp://user:password@localhost:5672/",
         name: "rabbitmq",
         timeout: TimeSpan.FromSeconds(3),
-        tags: new[] { "ready" });
+        tags: ["ready"]);
 
 var app = builder.Build();
 
