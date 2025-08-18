@@ -4,6 +4,8 @@ using AccountServices.Features.Accounts;
 using AccountServices.Features.Accounts.CreateAccount;
 using AccountServices.Features.Accounts.Services;
 using AccountServices.Features.Accounts.UpdateAccount;
+using AccountServices.Features.Events;
+using AccountServices.Features.Examples;
 using AccountServices.Features.Transactions.RegisterTransaction;
 using AccountServices.Features.Transactions.Services;
 using AccountServices.Features.Transactions.TransferTransaction;
@@ -12,17 +14,18 @@ using Hangfire;
 using Hangfire.PostgreSql;
 using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using RabbitMQ.Client;
 using Serilog;
+using Swashbuckle.AspNetCore.Filters;
 using System.Reflection;
 using System.Text;
 using System.Text.Json.Serialization;
-using AccountServices.Features.Events;
-using AccountServices.Features.Examples;
-using Swashbuckle.AspNetCore.Filters;
+using HealthChecks.UI.Client;
 using Testcontainers.RabbitMq;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -176,6 +179,13 @@ builder.Services.AddHttpLogging(o =>
 builder.Services.AddHttpClient("default")
     .AddHttpMessageHandler<LoggingHttpHandler>();
 
+builder.Services.AddHealthChecks()
+    .AddRabbitMQ(
+        "amqp://user:password@localhost:5672/",
+        name: "rabbitmq",
+        timeout: TimeSpan.FromSeconds(3),
+        tags: new[] { "ready" });
+
 var app = builder.Build();
 
 app.UseHttpLogging(); 
@@ -187,9 +197,18 @@ app.UseSerilogRequestLogging(options =>
 
 app.UseHangfireDashboard();
 
-//RecurringJob.AddOrUpdate<OutboxPublisherJob>(
-//    job => job.PublishOutboxMessages(),
-//    Cron.Minutely);
+app.MapHealthChecks("/health/live", new HealthCheckOptions
+{
+    Predicate = _ => false, 
+    ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+});
+
+app.MapHealthChecks("/health/ready", new HealthCheckOptions
+{
+    Predicate = check => check.Tags.Contains("ready"), 
+    ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+});
+
 
 RecurringJob.AddOrUpdate<InterestAccrualService>(
     "InterestAccrualJob",
